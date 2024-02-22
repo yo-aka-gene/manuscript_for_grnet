@@ -1,7 +1,8 @@
 \documentclass{article}
 \usepackage{authblk}
 \usepackage{acro}
-
+\usepackage{amsmath}
+\usepackage{amsfonts}
 
 \title{
   A graph-based practice of evaluating collective idendities of cell clusters
@@ -20,6 +21,8 @@
 \date{\today}
 
 \DeclareAcronym{scRNA-seq}{short = scRNA-seq, long  = single-cell RNA-sequencing}
+\DeclareAcronym{GRN}{short = GRN, long  = gene regulatory network}
+\DeclareAcronym{JIM}{short = JIM, long  = Jaccard index matrix}
 
 \begin{document}
 
@@ -35,6 +38,12 @@ of modern molecular biology. Likewise the pioneering technology, bulk RNA-seq,
 scRNA-seq can observe multidimensional gene expression profiles, while
 it also can provide such information in single-cell-level.
 
+$\vdots$
+
+In our previous research, we proposed a \ac{GRN}-based
+representation of cell clusters while edges of GRNs explain statistical
+dependencies between two genes\cite{okano2023set}.
+
 \section*{Results}
 Quite interesting, while being misterious.
 
@@ -42,9 +51,38 @@ Quite interesting, while being misterious.
 I have no idea.
 
 \section*{Methods}
-What is your thought?
+\subsection*{GO term-assisted gene selection}
+Although we intended to require experimenters to curate marker genes to use in GRN
+
+\subsubsection*{Jaccard Index}
+\begin{equation}\label{jaccard}
+  J(A, B) := \frac{A\cap B}{A\cup B}
+\end{equation}
+Jaccard Index of two sets $A, B$ is defined as Eq. \eqref{jaccard}. We expanded this 
+definition to pairwise comparisons of multiple elements by forming a matrix 
+where each element is the corresponding Jaccard Index, and we named the matrix \ac{JIM}. For example, the element in 
+$i$-th row and $j$-th column (where $i, j, k\in\mathbb{N}$ and $i\leq k, j\leq k$), $JIM_{i,j}$, can be defined as
+follows when a JIM of sets $X_1, X_2,\cdots, X_k$ are considered:
+\begin{equation}\label{jim}
+  JIM_{i, j} := J(X_i, X_j)
+\end{equation}
+Especially for seed markers, sets of subscribed GO terms (let $G_1, \cdots, G_k$)
+and their JIM are calulated in order to set $min_{i,j}(J(G_i, G_j))$ as a threshold of 
+biological correspondence.
+
+\subsubsection*{Impletemtation}
+Querying the GO database by using mygene.py\cite{mygene}, we calculated the JIM of the
+related GO terms of given seed markers with Numpy\cite{numpy}.
+
+\subsection*{scRNA-seq data analysis}
+The scRNA-seq data we used in this research were publicly available as online
+resources.
+\subsubsection*{Preprocessing, Dimensionality Reduction, and Visualization}
+We performed $\cdots$ using Scanpy\cite{scanpy}, Polars.
 
 \section*{Abbreviations}
 \printacronyms[heading=Abbreviations]
 
+\bibliographystyle{ieeetr}
+\bibliography{refs.bib}
 \end{document}
