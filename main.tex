@@ -3,6 +3,8 @@
 \usepackage{acro}
 \usepackage{amsmath}
 \usepackage{amsfonts}
+\usepackage{hyperref}
+\usepackage{url}
 
 \title{
   A graph-based practice of evaluating collective idendities of cell clusters
@@ -15,7 +17,7 @@
 }
 \affil[2]{
   Division of CNS Regeneration and Drug Discovery,
-  International Center for Brain Science (ICBS), 
+  International Center for Brain Science, 
   Fujita Health University
 }
 \date{\today}
@@ -23,6 +25,8 @@
 \DeclareAcronym{scRNA-seq}{short = scRNA-seq, long  = single-cell RNA-sequencing}
 \DeclareAcronym{GRN}{short = GRN, long  = gene regulatory network}
 \DeclareAcronym{JIM}{short = JIM, long  = Jaccard index matrix}
+
+\urlstyle{same}
 
 \begin{document}
 
@@ -42,19 +46,43 @@ $\vdots$
 
 In our previous research, we proposed a \ac{GRN}-based
 representation of cell clusters while edges of GRNs explain statistical
-dependencies between two genes\cite{okano2023set}.
+dependencies between two genes\cite{okano2023set}. We also demonstrated that similarity of
+two clusters can be defined as a quasi-pseudo-metric function\cite{okano2023set}. Althogh we
+introduced a theory to form GRNs based on dependencies of gene expressions, 
+we compromised to implement the algorithm relying on the statistical test of 
+correlation to deal with the continuity of scRNA-seq data. Considering the fact that 
+our method's primary application is the annotation of scRNA-seq data, 
+an effective binarization method is needed to reduce computational costs and 
+streamline the overall time required to initiate main analyses. Furthermore, we 
+intended to make our framework dependent on researchers' expertises on the 
+sample domains so that the metrics of cellular identities are tailor-made for the 
+research scopes providing necessary and sufficient resolutions. Constrary, this 
+design made our algorithm unfriendly to users. As the legitimacy our theory 
+needs to be validated in various cases, A semi-automated system to help users 
+select key marker genes is desired.
+
+$\vdots$
+
+Leveraging the backbone theory of GRN-based comparisons of cluster-wise
+cellular identities (i.e., cell classes), we implemented 
 
 \section*{Results}
-Quite interesting, while being misterious.
+\subsection*{The framework of GRNet}
+In this reserch, we revisited the workflow of the GRN-based annotation
+
+\subsection*{Automated marker-gene suggestion}
+Although we intended to require experimenters to curate marker genes to use
+in GRNs,
+\subsection*{Dropout-based binarization}
+\subsection*{Benchmarking}
 
 \section*{Discussion}
 I have no idea.
 
 \section*{Methods}
-\subsection*{GO term-assisted gene selection}
-Although we intended to require experimenters to curate marker genes to use in GRN
+\subsection*{GRNet Impletemtations}
 
-\subsubsection*{Jaccard Index}
+\subsubsection*{GO term-assisted gene selection referring Jaccard Index}
 \begin{equation}\label{jaccard}
   J(A, B) := \frac{A\cap B}{A\cup B}
 \end{equation}
@@ -70,15 +98,42 @@ Especially for seed markers, sets of subscribed GO terms (let $G_1, \cdots, G_k$
 and their JIM are calulated in order to set $min_{i,j}(J(G_i, G_j))$ as a threshold of 
 biological correspondence.
 
-\subsubsection*{Impletemtation}
-Querying the GO database by using mygene.py\cite{mygene}, we calculated the JIM of the
-related GO terms of given seed markers with Numpy\cite{numpy}.
+$\vdots$
+
+For detailed method of implementation, we calculated the JIM of the related GO terms of given seed markers. We used mygene.py\cite{mygene} to query the GO database, and Numpy\cite{numpy} to calculate JIM.
+
+\subsubsection*{GRNs and the evaluation function}
+Following our previous report\cite{okano2023set}, we computed GRNs by calculating
+correlations of continuous gene expression values (e.g., $log_2(RPM+1)$) using Pgmpy\cite{pgmpy}. In this study, we introduced
 
 \subsection*{scRNA-seq data analysis}
+\subsubsection*{Dataset List}
 The scRNA-seq data we used in this research were publicly available as online
-resources.
-\subsubsection*{Preprocessing, Dimensionality Reduction, and Visualization}
-We performed $\cdots$ using Scanpy\cite{scanpy}, Polars.
+resources as follows:\\
+M1C10X: \url{https://portal.brain-map.org/atlases-and-data/rnaseq/human-m1-10x}\\
+hFB: \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE165388}\\
+PBMC3k: \url{https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/pbmc3k}\\
+hBCA: \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE137864}\\
+\subsubsection*{Preprocessing, dimensionality reduction, and visualization}
+We performed data preprocessing, dimensionality reduction, data visualization
+of the scRNA-seq datasets using Python packages (including Scanpy\cite{scanpy}, Polars,
+Pandas\cite{pandas}, Numpy, Matplotlib\cite{matplotlib}, Seaborn\cite{seaborn}) and Julia packages.
+\subsubsection*{Clustering and DE analysis}
+We performed leiden clustering, DE analysis using Scanpy.
+
+\section*{Resource availability}
+\subsection*{Data availability}
+Not applicable
+\subsection*{Code availability}
+GRNet and the analysis codes are available on GitHub (\url{https://github.com/yo-aka-gene/grnet}).
+Online documentaiton for GRNet is also provived (\url{https://grnet.readthedocs.io}).
+
+% \section*{Author Contributions}
+
+
+\section*{Acknowledgements}
+We thank hogehoge for thorough support.
+
 
 \section*{Abbreviations}
 \printacronyms[heading=Abbreviations]
