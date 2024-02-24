@@ -302,3 +302,6 @@ TSWLatexianTemp*
 
 # MacOS
 .DS_Store
+
+# Adobe Illustrator
+*.ai
