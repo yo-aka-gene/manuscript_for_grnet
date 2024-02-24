@@ -3,6 +3,9 @@
 \usepackage{acro}
 \usepackage{amsmath}
 \usepackage{amsfonts}
+\usepackage{caption}
+\usepackage[margin=20truemm]{geometry}
+\usepackage[dvipdfmx]{graphicx}
 \usepackage{hyperref}
 \usepackage{url}
 
@@ -10,6 +13,8 @@
   A graph-based practice of evaluating collective idendities of cell clusters
 }
 \author[1,2]{Yuji Okano}
+\author[2]{Yoshitaka Kase}
+\author[2]{Hideyuki Okano}
 \affil[1]{
   Department of Extended Intelligence for Medicine, 
   The Ishii-Ishibashi Laboratory, 
@@ -26,6 +31,9 @@
 \DeclareAcronym{GRN}{short = GRN, long  = gene regulatory network}
 \DeclareAcronym{JIM}{short = JIM, long  = Jaccard index matrix}
 
+\DeclareCaptionLabelFormat{mainfigs}{\textbf{Figure #2}}
+\captionsetup[figure]{labelformat=mainfigs}
+
 \urlstyle{same}
 
 \begin{document}
@@ -36,9 +44,9 @@
 Random sentences
 
 \section*{Introduction}
-It has been more than 10 years since the birth of \ac{scRNA-seq},
-and the technology now is recognized as a prominent game changer
-of modern molecular biology. Likewise the pioneering technology, bulk RNA-seq,
+It has been more than 10 years since the birth of \ac{scRNA-seq}, and the technology 
+now is recognized as a prominent game changer of modern molecular biology. Likewise the pioneering technology, 
+bulk RNA-seq,
 scRNA-seq can observe multidimensional gene expression profiles, while
 it also can provide such information in single-cell-level.
 
@@ -66,6 +74,11 @@ $\vdots$
 Leveraging the backbone theory of GRN-based comparisons of cluster-wise
 cellular identities (i.e., cell classes), we implemented 
 
+$\vdots$
+
+To simplify the contents of this study to highlight our foci, we would not 
+discuss any practices of designing data spaces or clustering in depth.
+
 \section*{Results}
 \subsection*{The framework of GRNet}
 In this reserch, we revisited the workflow of the GRN-based annotation
@@ -73,6 +86,16 @@ In this reserch, we revisited the workflow of the GRN-based annotation
 \subsection*{Automated marker-gene suggestion}
 Although we intended to require experimenters to curate marker genes to use
 in GRNs,
+\figurename{ 1A-B}
+
+\begin{figure}[htb]
+  \centering
+  \includegraphics[scale=0.45]{./figs/exported/figure_s1.png}
+  \caption{Gene expression patterns of clusters in PBMC3k}
+  \label{fig1}
+\end{figure}
+
+
 \subsection*{Dropout-based binarization}
 \subsection*{Benchmarking}
 
@@ -113,7 +136,8 @@ resources as follows:\\
 M1C10X: \url{https://portal.brain-map.org/atlases-and-data/rnaseq/human-m1-10x}\\
 hFB: \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE165388}\\
 PBMC3k: \url{https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/pbmc3k}\\
-hBCA: \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE137864}\\
+aHSPC: \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE137864}\\
+BCA: \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE149938}\\
 \subsubsection*{Preprocessing, dimensionality reduction, and visualization}
 We performed data preprocessing, dimensionality reduction, data visualization
 of the scRNA-seq datasets using Python packages (including Scanpy\cite{scanpy}, Polars,
