@@ -4,6 +4,7 @@
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{caption}
+\usepackage{ccaption}
 \usepackage[margin=20truemm]{geometry}
 \usepackage[dvipdfmx]{graphicx}
 \usepackage{hyperref}
@@ -30,6 +31,8 @@
 \DeclareAcronym{scRNA-seq}{short = scRNA-seq, long  = single-cell RNA-sequencing}
 \DeclareAcronym{GRN}{short = GRN, long  = gene regulatory network}
 \DeclareAcronym{JIM}{short = JIM, long  = Jaccard index matrix}
+\DeclareAcronym{DEA}{short = DEA, long  = differential expression analysis}
+\DeclareAcronym{DEG}{short = DEG, long  = differentially expressed gene}
 
 \DeclareCaptionLabelFormat{mainfigs}{\textbf{Figure #2}}
 \captionsetup[figure]{labelformat=mainfigs}
@@ -54,10 +57,14 @@ $\vdots$
 
 In our previous research, we proposed a \ac{GRN}-based
 representation of cell clusters while edges of GRNs explain statistical
-dependencies between two genes\cite{okano2023set}. We also demonstrated that similarity of
-two clusters can be defined as a quasi-pseudo-metric function\cite{okano2023set}. Althogh we
-introduced a theory to form GRNs based on dependencies of gene expressions, 
-we compromised to implement the algorithm relying on the statistical test of 
+dependencies between two genes, and demonstrated that similarity of
+two clusters can be defined as a quasi-pseudo-metric function $d^*$\cite{okano2023set}. When the 
+
+In addition to the theoretical proposal, we applied our logic to 
+the annotation of scRNA-seq data, and showed that the GRN-based anntation can visualize the similarities and the
+difference of cell clusters, which the conventional \ac{DEG}-based manual annotation could not address due to the objectives of \ac{DEA} to summerize the biological semantics 
+of the clusters. Althogh we introduced a theory to form GRNs based on dependencies of gene expressions, we 
+compromised to implement the algorithm relying on the statistical test of 
 correlation to deal with the continuity of scRNA-seq data. Considering the fact that 
 our method's primary application is the annotation of scRNA-seq data, 
 an effective binarization method is needed to reduce computational costs and 
@@ -68,6 +75,23 @@ research scopes providing necessary and sufficient resolutions. Constrary, this
 design made our algorithm unfriendly to users. As the legitimacy our theory 
 needs to be validated in various cases, A semi-automated system to help users 
 select key marker genes is desired.
+
+\begin{figure}[htb]
+  \centering
+  \includegraphics[scale=0.7]{./figs/exported/figure_1.png}
+  \caption{The framework of the GRN-based characterization and annotation of cell classes}
+  \legend{
+    \textbf{A}: The foundation of the GRN-based characterization of cell classes. 
+    After clustering in designed data space by arbitrary methods, cell classes (the clusters) can be represented by 
+    GRNs of corresponding genes of choice. The similarity of two GRNs of the same vertex 
+    (marker gene) are evaluated with the assymetrical function $d^*$, where the return values 
+    reflects the similarity from the viewpoint of the subjective clusters. \textbf{B}: 
+    Schematic of the GRN-based scRNA-seq data annotation. Expecting the referential data to reflect canonical 
+    states of target sample domains, the evaluation of the similarity among cell classes can be performed bidirectionally.
+    \textbf{C}: Methodological variations of the selection of vertex sets (marker genes) and the algorithms to compute the network structures of GRNs.
+  }
+  \label{framework}
+\end{figure}
 
 $\vdots$
 
@@ -80,19 +104,19 @@ To simplify the contents of this study to highlight our foci, we would not
 discuss any practices of designing data spaces or clustering in depth.
 
 \section*{Results}
-\subsection*{The framework of GRNet}
+\subsection*{Challenges of the framework of GRN-based methods}
 In this reserch, we revisited the workflow of the GRN-based annotation
+
 
 \subsection*{Automated marker-gene suggestion}
 Although we intended to require experimenters to curate marker genes to use
-in GRNs,
-\figurename{ 1A-B}
+in GRNs, overly recurrsive trials to find 
 
 \begin{figure}[htb]
   \centering
-  \includegraphics[scale=0.45]{./figs/exported/figure_s1.png}
+  \includegraphics[scale=0.6]{./figs/exported/figure_s1.png}
   \caption{Gene expression patterns of clusters in PBMC3k}
-  \label{fig1}
+  \label{bc}
 \end{figure}
 
 
@@ -150,7 +174,7 @@ We performed leiden clustering, DE analysis using Scanpy.
 Not applicable
 \subsection*{Code availability}
 GRNet and the analysis codes are available on GitHub (\url{https://github.com/yo-aka-gene/grnet}).
-Online documentaiton for GRNet is also provived (\url{https://grnet.readthedocs.io}).
+Online documentation for GRNet is also provived (\url{https://grnet.readthedocs.io}).
 
 % \section*{Author Contributions}
 
