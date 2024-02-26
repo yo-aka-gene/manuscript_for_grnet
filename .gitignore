@@ -305,3 +305,6 @@ TSWLatexianTemp*
 
 # Adobe Illustrator
 *.ai
+
+# Jupyter
+*/*/.ipynb_checkpoints/*
