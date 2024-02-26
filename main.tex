@@ -33,6 +33,16 @@
 \DeclareAcronym{JIM}{short = JIM, long  = Jaccard index matrix}
 \DeclareAcronym{DEA}{short = DEA, long  = differential expression analysis}
 \DeclareAcronym{DEG}{short = DEG, long  = differentially expressed gene}
+\DeclareAcronym{PC}{short = PC, long  = Peter and Clark}
+\DeclareAcronym{RPM}{short = RPM, long  = reads per million}
+\DeclareAcronym{HVG}{short = HVG, long  = highly variable gene}
+\DeclareAcronym{PCA}{short = PCA, long  = principal component analysis}
+\DeclareAcronym{TSVD}{short = TSVD, long  = truncated singular value decomposition}
+\DeclareAcronym{UMAP}{short = UMAP, long  = Uniform Manifold Approximation and Projection}
+\DeclareAcronym{ML}{short = ML, long  = machine learning}
+\DeclareAcronym{GBDT}{short = GBDT, long  = gradient boosting decision tree}
+\DeclareAcronym{GO}{short = GO, long  = gene ontology}
+\DeclareAcronym{QC}{short = QC, long  = quality control}
 
 \DeclareCaptionLabelFormat{mainfigs}{\textbf{Figure #2}}
 \captionsetup[figure]{labelformat=mainfigs}
@@ -47,28 +57,69 @@
 Random sentences
 
 \section*{Introduction}
-It has been more than 10 years since the birth of \ac{scRNA-seq}, and the technology 
-now is recognized as a prominent game changer of modern molecular biology. Likewise the pioneering technology, 
-bulk RNA-seq,
-scRNA-seq can observe multidimensional gene expression profiles, while
-it also can provide such information in single-cell-level.
+It has been more than 10 years since the birth of \ac{scRNA-seq}\cite{tang2009mrna}, and the technology now 
+is recognized as a prominent game changer of modern molecular biology. Likewise the pioneering technologies, DNA 
+micro array and bulk RNA-seq, scRNA-seq can observe multidimensional gene expression profiles, while it also can 
+provide such information in single-cell-level. Although this informative assay have contributed to reveal detailed 
+biology of various cell types, the excessive resolution blurred the conceptual boundary between static cell types and 
+transient cell status\cite{regev2017human}. Consequently, clusters, chunks of sampels that shares similar geometrical properties in the 
+data space overwrote the classical notion of cell types. As the cell clusters are dependent on sampling stochasticity 
+of the dataset, and their biological properties might sway from the original doctrine of cell types\cite{okano2023set}. Hence, a theoretical 
+backbone and a effective method to glue the theory and real data are essential to identify universal characters of specific 
+samples from piles of extrinsic noises.
+
+In our previous research, we proposed a \ac{GRN}-based representation of cell clusters 
+while edges of GRNs explain statistical dependencies between two genes, and demonstrated that similarity of two 
+clusters can be defined as a quasi-pseudo-metric function $d^*$\cite{okano2023set}. To discuss mathematical properties of the space of 
+cell clusters, we defined novel terms, cell class and eigen-cascades, and step-by-step introduced their algebraic 
+structures. Eigen-cascades refer to a set of marker genes and pairs of genes that are statistically dependent (i.e., 
+the direct sum of the direct sums of the vertex set and the edge set of a GRN). A cell class refers to a cell cluster 
+characterized with the corresponding eigen-cascades. Note that the nuances of cell cluaters and cell classes are 
+slightly different even though we might use those terms interchangeably in this article (See Appendix for more 
+descriptions). When two cell classes $^\forall[x], [y]$ are represented by the GRNs regarding a set of genes $G$, and the two 
+GRNs (eigen-cascades) respectively denoted as $C_{[x]}(G)$ and $C_{[y]}(G)$, a bivariate function $d^*$ that maps a pair of cell 
+classes to real numbers are defined as follows\cite{okano2023set}:
+\begin{equation}\label{d_asterisk}
+  d^*([x], [y]) := 1 - \frac{C_{[x]}(G)\cap C_{[y]}(G)}{C_{[x]}(G)}.
+\end{equation}
+Eq. \eqref{d_asterisk} is derived from the Hamming distance function (a metric function that measures the difference of two 
+character strings) and modeified to embrace the tendency of the \ac{PC} algorithm, one of the most 
+simple bayesian network algorithms\cite{okano2023set,bookstein2002generalized, spirtes2000causation}. With those concepts, we also proposed frameworks to compare the 
+similarities of given two cell clusters. Our scheme comprises two fundamental steps: formation of GRNs and 
+evaluation of their similarity (\figurename{ 1A}). As the concept of cell classes are independent from the choice of data 
+analysis methods, this frameowrk itself can be applied into various cases regardless of any feature engineering (such 
+as the data preprocessing) and clustering methods.
+
+The framework can be applied into the annotation of scRNA-seq data when a referential dataset is available 
+(\figurename{ 1B}). As the annotation is the act of tagging clusters with descriptions in natural languages, the biological 
+features of annotated clusters often treated as general and preserved properties of the cell types which the clusters 
+are named after. Accordingly, it is better to have a large enough referential dataset which seem to reflect canonical 
+states of specific cell types which are shared with the query dataset. Using GRN-based characterization, cell classes 
+are annotated with the name of the most similar cell class, however, comparisons of cellular identities can be 
+bidirectional due to asymmetry of $d^*$. We named the similarity of cell classes from the perspectives of the query 
+data as estimation, and the one from the point of view of the referential data as labeling. Those GRN-based 
+annotations can be visualized with planet plots, where the subjective cell class (here we denote it $[x]$) is located in 
+the center and the radii of the circles reflect $d^*([x],\cdot)$ values for all cell classes placed on the circumferences.
+
+The performance of those frameworks build around GRNs have its bottoleneck in the step to create GRNs, and 
+the process can be broken down into the configuration of the vertex sets and the choice of the network algorithm 
+(\figurename{ 1C}). As well as the methods of the feature engineering and the clustering, each step of the GRN formation 
+also has a variety of options. In the last paper, we introduced a combined method of manual curration referring 
+review articles and a \ac{ML}-based feature selection using a \ac{GBDT} 
+model with the L1 and the L2 regularizations\cite{okano2023set}. For the manual supervision, \ac{GO} terms can be 
+another information source. Nevertheless, a priori identification of the sample components are essential to create 
+meaningful GRNs by injecting the domain-specific information. The \ac{DEG}-based 
+method can be a more heuristic and a less interactive option because the \ac{DEA} 
+semi-automatically scoops DEGs. Regarding the network algorithms, 
 
 $\vdots$
-
-In our previous research, we proposed a \ac{GRN}-based
-representation of cell clusters while edges of GRNs explain statistical
-dependencies between two genes, and demonstrated that similarity of
-two clusters can be defined as a quasi-pseudo-metric function $d^*$\cite{okano2023set}. When the 
 
 In addition to the theoretical proposal, we applied our logic to 
 the annotation of scRNA-seq data, and showed that the GRN-based anntation can visualize the similarities and the
 difference of cell clusters, which the conventional \ac{DEG}-based manual annotation could not address due to the objectives of \ac{DEA} to summerize the biological semantics 
-of the clusters. Althogh we introduced a theory to form GRNs based on dependencies of gene expressions, we 
-compromised to implement the algorithm relying on the statistical test of 
-correlation to deal with the continuity of scRNA-seq data. Considering the fact that 
-our method's primary application is the annotation of scRNA-seq data, 
-an effective binarization method is needed to reduce computational costs and 
-streamline the overall time required to initiate main analyses. Furthermore, we 
+of the clusters.
+
+Furthermore, we 
 intended to make our framework dependent on researchers' expertises on the 
 sample domains so that the metrics of cellular identities are tailor-made for the 
 research scopes providing necessary and sufficient resolutions. Constrary, this 
@@ -88,7 +139,8 @@ select key marker genes is desired.
     reflects the similarity from the viewpoint of the subjective clusters. \textbf{B}: 
     Schematic of the GRN-based scRNA-seq data annotation. Expecting the referential data to reflect canonical 
     states of target sample domains, the evaluation of the similarity among cell classes can be performed bidirectionally.
-    \textbf{C}: Methodological variations of the selection of vertex sets (marker genes) and the algorithms to compute the network structures of GRNs.
+    \textbf{C}: Methodological variations of the selection of vertex sets (marker genes) and the algorithms to compute 
+    the network structures of GRNs.
   }
   \label{framework}
 \end{figure}
@@ -107,21 +159,62 @@ discuss any practices of designing data spaces or clustering in depth.
 \subsection*{Challenges of the framework of GRN-based methods}
 In this reserch, we revisited the workflow of the GRN-based annotation
 
+$\vdots$
 
-\subsection*{Automated marker-gene suggestion}
-Although we intended to require experimenters to curate marker genes to use
-in GRNs, overly recurrsive trials to find 
+To demonstrate those difficulties, we analyzed an open source scRNA-seq data of peripheral blood mononuclear 
+cells from 10X Genomics (for short, we named the dataset PMBC3k in this research).
+
+\subsubsection*{1. Difficulty of effective gene selection}
+In our previous study, we proposed a method to combine supervised curration reffering a review paper and a 
+
+$\vdots$
+
+The standard workflow consists the \ac{QC} of the data, normalization such as \ac{RPM} transformation and logarithmic transformation, \ac{HVG} extraction, demensionality reduction such as \ac{PCA}, 
+\ac{TSVD}, \ac{UMAP}\cite{umap}, etc., clustering, \ac{DEA}, annotation, and other downstream analysis (\figurename{ S1}).
+
+Considering the fact that 
+our method's primary application is the annotation of scRNA-seq data, 
+we need an alternative method to find marker genes to reduce computational costs and 
+streamline the overall time required to initiate main analyses.
+
+\subsubsection*{2. Statistical issue: independence v.s. uncorrelation}
+The statistical independence of two events $A$ and $B$ is defined as a situation where the following equation holds:
+\begin{equation}\label{independence}
+  P(A\cap B)=P(A)P(B),
+\end{equation}
+where $P(\cdot)$ is the probability of an event. On the other hand, the correlation coefficient $Corr(X, Y)$ of stochastic variables 
+$X$ and $Y$ is defined as follows:
+\begin{equation}\label{corr}
+  Corr(X, Y):=\frac{Cov(X, Y)}{\sqrt{Var[X]Var[Y]}}=\frac{E[(X-E[X])(Y-E[Y])]}{\sqrt{Var[X]Var[Y]}},\quad \text{if}\; Var[X]Var[Y] > 0,
+\end{equation}
+where $E[\cdot]$ is the expected value, $Var[\cdot]$ is the variance, and $Cov(\cdot, \cdot)$ is the covariance. Independent variables 
+exhibit a correlation coefficient of zero, the converse is false (e.g., when $X\sim U(-1, 1)$, where $U(-1, 1)$ refers to the uniform 
+distribution over the interval from -1 to 1, $Corr(X, X^2)=0$ although $X$ and $X^2$ are dependent). Therefore, strictly 
+speaking, it is not appropriate to substitute the chi squared test or the exact test with the t test of correlation.
+
+However, we introduced a correlation-based algorithm to get GRNs compromising rigor in order to adjust to 
+continuous gene expression values. To address this issue, we need to implement an effective method to binarize the 
+gene expression values so that the new algorithm would rely on the statistical tests of independence. This update 
+would make our algorithm align better to the original concept of our theory.
+
+\subsubsection*{3. Irresponsibility to gene expression values}
+To demonstrate this difficulty, we analyzed an open source scRNA-seq data of peripheral blood mononuclear 
+cells from 10X Genomics (for short, we named the dataset PMBC3k in this research).
 
 \begin{figure}[htb]
   \centering
-  \includegraphics[scale=0.6]{./figs/exported/figure_s1.png}
+  \includegraphics[scale=0.8]{./figs/exported/figure_2.png}
   \caption{Gene expression patterns of clusters in PBMC3k}
   \label{bc}
 \end{figure}
 
 
+\subsection*{Automated marker-gene suggestion}
+Although we intended to require experimenters to curate marker genes to use
+in GRNs, overly recurrsive trials to find 
+
 \subsection*{Dropout-based binarization}
-\subsection*{Benchmarking}
+\subsection*{Weighted evaluation function}
 
 \section*{Discussion}
 I have no idea.
@@ -178,6 +271,9 @@ Online documentation for GRNet is also provived (\url{https://grnet.readthedocs.
 
 % \section*{Author Contributions}
 
+\section*{Author contributions}
+YO designed the project, implemented the algorithms, excecuted the analyses, and wrote the manuscript. YK 
+contributed as the senior author, and edited the manuscript. HO edited the manuscript, and supervised the project.
 
 \section*{Acknowledgements}
 We thank hogehoge for thorough support.
