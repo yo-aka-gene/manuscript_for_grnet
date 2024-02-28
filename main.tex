@@ -43,6 +43,7 @@
 \DeclareAcronym{GBDT}{short = GBDT, long  = gradient boosting decision tree}
 \DeclareAcronym{GO}{short = GO, long  = gene ontology}
 \DeclareAcronym{QC}{short = QC, long  = quality control}
+\DeclareAcronym{MMHC}{short = MMHC, long  = max-min hill-climbing}
 
 \DeclareCaptionLabelFormat{mainfigs}{\textbf{Figure #2}}
 \captionsetup[figure]{labelformat=mainfigs}
@@ -110,23 +111,12 @@ model with the L1 and the L2 regularizations\cite{okano2023set}. For the manual 
 another information source. Nevertheless, a priori identification of the sample components are essential to create 
 meaningful GRNs by injecting the domain-specific information. The \ac{DEG}-based 
 method can be a more heuristic and a less interactive option because the \ac{DEA} 
-semi-automatically scoops DEGs. Regarding the network algorithms, we mentioned that there are several possible options.e implemented our codes based on the 
-numerical PC algorithms
-
-$\vdots$
-
-In addition to the theoretical proposal, we applied our logic to 
-the annotation of scRNA-seq data, and showed that the GRN-based annotation can visualize the similarities and the
-difference of cell clusters, which the conventional \ac{DEG}-based manual annotation could not address due to the objectives of \ac{DEA} to summerize the biological semantics 
-of the clusters.
-
-Furthermore, we 
-intended to make our framework dependent on researchers' expertises on the 
-sample domains so that the metrics of cellular identities are tailor-made for the 
-research scopes providing necessary and sufficient resolutions. Constrary, this 
-design made our algorithm unfriendly to users. As the legitimacy our theory 
-needs to be validated in various cases, A semi-automated system to help users 
-select key marker genes is desired.
+semi-automatically scoops DEGs. Regarding the network algorithms, we mentioned that there are several possible 
+options as well. In our previous paper, we implemented our codes using the numerical (i.e., correlation-based) PC 
+algorithms provided in Pgmpy\cite{pgmpy}, a python package for probablistic graphical models. Another variation of the PC 
+algorithm based on the chi-square test suitable for categorical data is also a realistic option if when the expression 
+values can be binalized in some ways. We also mentioned that the \ac{MMHC} algorithm, which 
+combines constraint-based and scoring-based methods\cite{tsamardinos2006max}, is one of promissing alternatives of the PC algorithm.
 
 \begin{figure}[htb]
   \centering
@@ -146,15 +136,18 @@ select key marker genes is desired.
   \label{framework}
 \end{figure}
 
-$\vdots$
+So far, we have highlighted the versatility of our framework by providing examples that showcase its applicability 
+across various data analysis methods. Our intention was to allow researchers to reflect their expertise in specific 
+sample domains or preferences to the process of describing the samples with words of biology. This customization 
+ensures that the metrics for cellular identities are crafted to align with the specific research scopes, providing both 
+necessary and sufficient resolutions. However, this design choice has the drawback of making our algorithm less 
+user-friendly, as it requires a significant amount of effort in annotation, even when it might not be the primary 
+focus of their projects. To validate the legitimacy of our theory in as many cases as possible, it is essential to refine 
+the practices related to GRN-based annotation, streamlining the overall workflow.
 
-Leveraging the backbone theory of GRN-based comparisons of cluster-wise
-cellular identities (i.e., cell classes), we implemented 
-
-$\vdots$
-
-To simplify the contents of this study to highlight our foci, we would not 
-discuss any practices of designing data spaces or clustering in depth.
+In this article, enumerating the three major topics where the former protocol has rooms for refinement, we 
+provided more prectical solutions for each while leveraging the backbone theory of GRN-based comparisons of cluster-wise
+cellular identities (i.e., cell classes).
 
 \section*{Results}
 \subsection*{Challenges of the framework of GRN-based methods}
@@ -191,7 +184,7 @@ $X$ and $Y$ is defined as follows:
 where $E[\cdot]$ is the expected value, $Var[\cdot]$ is the variance, and $Cov(\cdot, \cdot)$ is the covariance. Independent variables 
 exhibit a correlation coefficient of zero, the converse is false (e.g., when $X\sim U(-1, 1)$, where $U(-1, 1)$ refers to the uniform 
 distribution over the interval from -1 to 1, $Corr(X, X^2)=0$ although $X$ and $X^2$ are dependent). Therefore, strictly 
-speaking, it is not appropriate to substitute the chi squared test or the exact test with the t test of correlation.
+speaking, it is not appropriate to substitute the chi-square test or the exact test with the t test of correlation.
 
 However, we introduced a correlation-based algorithm to get GRNs compromising rigor in order to adjust to 
 continuous gene expression values. To address this issue, we need to implement an effective method to binarize the 
@@ -205,7 +198,7 @@ cells from 10X Genomics (for short, we named the dataset PMBC3k in this research
 \begin{figure}[htb]
   \centering
   \includegraphics[scale=0.8]{./figs/exported/figure_2.png}
-  \caption{Gene expression patterns of clusters in PBMC3k}
+  \caption{Examples of the major issues on the GRN-based frameworks}
   \label{bc}
 \end{figure}
 
@@ -277,7 +270,7 @@ For detailed method of implementation, we calculated the JIM of the related GO t
 
 \subsubsection*{GRNs and the evaluation function}
 Following our previous report\cite{okano2023set}, we computed GRNs by calculating
-correlations of continuous gene expression values (e.g., $log_2(RPM+1)$) using Pgmpy\cite{pgmpy}. In this study, we introduced
+correlations of continuous gene expression values (e.g., $log_2(RPM+1)$) using pgmpy. In this study, we introduced
 
 \subsection*{scRNA-seq data analysis}
 \subsubsection*{Dataset List}
@@ -287,13 +280,24 @@ M1C10X: \url{https://portal.brain-map.org/atlases-and-data/rnaseq/human-m1-10x}\
 hFB: \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE165388}\\
 PBMC3k: \url{https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/pbmc3k}\\
 aHSPC: \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE137864}\\
-BCA: \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE149938}\\
+BCA: \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE149938}
+
 \subsubsection*{Preprocessing, dimensionality reduction, and visualization}
 We performed data preprocessing, dimensionality reduction, data visualization
 of the scRNA-seq datasets using Python packages (including Scanpy\cite{scanpy}, Polars,
 Pandas\cite{pandas}, Numpy, Matplotlib\cite{matplotlib}, Seaborn\cite{seaborn}) and Julia packages.
+
 \subsubsection*{Clustering and DE analysis}
 We performed leiden clustering, DE analysis using Scanpy.
+
+\subsubsection*{Enrichment analysis}
+We performed the enrichment analysis using gprofiler2\cite{gprofiler2}, and visualized the results with Matplotlib and Seaborn.
+
+\subsection*{Other visualizations}
+\subsubsection*{Alluvial plot of gene symbols and GO terms}
+The glial markers were selected referring review articles, and the tagged GO terms were querried using mygene.py. 
+Then, all gene symbols subscribed with each GO terms were querried again. The visualization was implemented 
+with Matplotlib, Numpy, Pandas.
 
 \section*{Resource availability}
 \subsection*{Data availability}
@@ -302,7 +306,6 @@ Not applicable
 GRNet and the analysis codes are available on GitHub (\url{https://github.com/yo-aka-gene/grnet}).
 Online documentation for GRNet is also provived (\url{https://grnet.readthedocs.io}).
 
-% \section*{Author Contributions}
 
 \section*{Author contributions}
 YO designed the project, implemented the algorithms, excecuted the analyses, and wrote the manuscript. YK 
