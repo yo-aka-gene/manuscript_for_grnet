@@ -20,7 +20,7 @@
 \urlstyle{same}
 
 \begin{document}
-
+\pagenumbering{roman}
 \maketitle
 
 \section*{Appendix}
@@ -41,10 +41,11 @@ A graph $(V, E)$ is a pair of the vertex set $V$ and the edge set $E$. To create
 set of genes $G$ based on the statistical dependencies of the genes, the vertex set $V(G)$ and the 
 edgeset $E(G)$ are introduced as follows:
 \begin{equation}\label{V}
-  V(G):=G
+  V(G):=G \stepcounter{equation} \tag{S-\theequation}
 \end{equation}
 \begin{equation}\label{E}
   E(G):=\{(g_1, g_2)\;|\;g_1,g_2\in G\; s.t. \;g_1\neq g_2\;\text{and}\; g_1\;\text{is dependent on}\;g_2\}.
+  \stepcounter{equation} \tag{S-\theequation}
 \end{equation}
 It is important to note that $(V(G),E(G))$ itself refers to a multigraph and we need to equate $(g_1,g_2)$ 
 and $(g_2,g_1)$ to create GRNs (undirected simple graphs). In the previous article, we introduced 
@@ -64,9 +65,11 @@ eigen-cascades $C_{[x]}(G)$ of $[x]$ equals to the union of $V_{[x]}(G)$ and
 $E_{[x]}(G)$ defined as follows:
 \begin{equation}\label{Vx}
   V_{[x]}(G):=\{c|c\in C_{[x]}(G)\; s.t.\; |c|=1\}=\{\{g\}_g|g\in G\}
+  \stepcounter{equation} \tag{S-\theequation}
 \end{equation}
 \begin{equation}\label{Ex}
   E_{[x]}(G):=\{c|c\in C_{[x]}(G)\; s.t.\; |c|=2\}=C_{[x]}(G)\setminus V_{[x]}(G).
+  \stepcounter{equation} \tag{S-\theequation}
 \end{equation}
 
 Juxtaposing the given definitions from Eq. \eqref{V} to Eq. \eqref{Ex}, $V_{[x]}(G)$ and $V_x(G)$ 
@@ -81,6 +84,26 @@ cell classes include various notations, operations, and hypotheses that can soun
 In this article, we simply introduced the notations of $[x]$ and $C_{[x]}(G)$ aiming to shortcut the redundant part. 
 We recommend to refer to the original article for readers interested in the detailed explanations.
 
+\subsubsection*{
+  The preimage and general scRNA-seq data transformation
+}
+Let $^\forall A,B,C$ be sets such that $C\subset B$, and let $f:A\rightarrow B$ be a map. 
+The preimage of $C$ under $f$ (denoted as $f^{-1}[C]$) is defined as follows:
+\begin{equation}\label{preimage}
+  f^{-1}[C]:=\{a\;|\;a\in A\;s.t.\;f(a)\in C\}.
+  \stepcounter{equation} \tag{S-\theequation}
+\end{equation}
+Therefore, a function $\psi: \mathbb{N}\rightarrow\mathbb{R}$ such that $\psi^{-1}[\{0\}]=\{0\}$ returns zero 
+if and only if the input value is zero. This property is essential for $Coverage_{[x]}$ to identify non-zero values.
+
+Let $\psi_R:\mathbb{N}\rightarrow \mathbb{Q}$ as the RPM transformation from the raw counts, and let $\psi_L:\mathbb{Q}\rightarrow \mathbb{R}$ be the transformation 
+from RPM values to $\log_k(RPM+1)$ for all $k>0$. It is trivial that $\psi_R^{-1}[\{0\}]=\{0\}$ and $\psi_L^{-1}[\{0\}]=\{0\}$ hold.
+Accordingly, the conversion from raw counts to $\log_k(RPM+1)$ values are $\psi_L\circ\psi_R$, and the following equation holds:
+\begin{equation}\label{raw2logrpm}
+  (\psi_L\circ\psi_R)^{-1}[\{0\}]=\psi_R^{-1}[\psi_L^{-1}[\{0\}]]=\psi_R^{-1}[\{0\}]=\{0\}.
+  \stepcounter{equation} \tag{S-\theequation}
+\end{equation}
+
 \newpage
 \subsection*{Supplemental Figures}
 \begin{figure}[htb]
@@ -88,7 +111,8 @@ We recommend to refer to the original article for readers interested in the deta
   \includegraphics[scale=0.6]{./figs/exported/figure_s1.png}
   \caption{Standard workflow of scRNA-seq analysis}
   \legend{
-    figure legend
+    A scheme that shows a standard process of scRNA-seq data analysis. 
+    The plots were generated during the analysis of PBMC3k.
   }
   \label{fig_s1}
 \end{figure}

@@ -58,7 +58,7 @@ Random sentences
 
 \section*{Introduction}
 It has been more than 10 years since the birth of \ac{scRNA-seq}\cite{tang2009mrna}, and the technology now 
-is recognized as a prominent game changer of modern molecular biology. Likewise the pioneering technologies, DNA 
+is recognized as a prominent game changer of the molecular biology of this decade. Likewise the pioneering technologies, DNA 
 micro array and bulk RNA-seq, scRNA-seq can observe multidimensional gene expression profiles, while it also can 
 provide such information in single-cell-level. Although this informative assay have contributed to reveal detailed 
 biology of various cell types, the excessive resolution blurred the conceptual boundary between static cell types and 
@@ -73,14 +73,14 @@ while edges of GRNs explain statistical dependencies between two genes, and demo
 clusters can be defined as a quasi-pseudo-metric function $d^*$\cite{okano2023set}. To discuss mathematical properties of the space of 
 cell clusters, we defined novel terms, cell class and eigen-cascades, and step-by-step introduced their algebraic 
 structures. Eigen-cascades refer to a set of marker genes and pairs of genes that are statistically dependent (i.e., 
-the direct sum of the direct sums of the vertex set and the edge set of a GRN). A cell class refers to a cell cluster 
-characterized with the corresponding eigen-cascades. Note that the nuances of cell cluaters and cell classes are 
-slightly different even though we might use those terms interchangeably in this article (See Appendix for more 
-descriptions). When two cell classes $^\forall[x], [y]$ are represented by the GRNs regarding a set of genes $G$, and the two 
-GRNs (eigen-cascades) respectively denoted as $C_{[x]}(G)$ and $C_{[y]}(G)$, a bivariate function $d^*$ that maps a pair of cell 
-classes to real numbers are defined as follows\cite{okano2023set}:
+isomorphic to the direct sum of the direct sums of the vertex set and the edge set of a GRN). A cell class refers to 
+a cell cluster characterized with the corresponding eigen-cascades. Note that the nuances of cell clusters and cell 
+classes are slightly different even though we might use those terms interchangeably in this article (See Appendix 
+for more descriptions). When two cell classes $^\forall[x], [y]$ are represented by the GRNs regarding a set of genes $G$, and 
+the two GRNs (eigen-cascades) respectively denoted as $C_{[x]}(G)$ and $C_{[y]}(G)$, a bivariate function $d^*$ that maps a 
+pair of cell classes to real numbers are defined as follows\cite{okano2023set}:
 \begin{equation}\label{d_asterisk}
-  d^*([x], [y]) := 1 - \frac{C_{[x]}(G)\cap C_{[y]}(G)}{C_{[x]}(G)}.
+  d^*([x], [y]) := 1 - \frac{|C_{[x]}(G)\cap C_{[y]}(G)|}{|C_{[x]}(G)|}.
 \end{equation}
 Eq. \eqref{d_asterisk} is derived from the Hamming distance function (a metric function that measures the difference of two 
 character strings) and modeified to embrace the tendency of the \ac{PC} algorithm, one of the most 
@@ -110,12 +110,13 @@ model with the L1 and the L2 regularizations\cite{okano2023set}. For the manual 
 another information source. Nevertheless, a priori identification of the sample components are essential to create 
 meaningful GRNs by injecting the domain-specific information. The \ac{DEG}-based 
 method can be a more heuristic and a less interactive option because the \ac{DEA} 
-semi-automatically scoops DEGs. Regarding the network algorithms, 
+semi-automatically scoops DEGs. Regarding the network algorithms, we mentioned that there are several possible options.e implemented our codes based on the 
+numerical PC algorithms
 
 $\vdots$
 
 In addition to the theoretical proposal, we applied our logic to 
-the annotation of scRNA-seq data, and showed that the GRN-based anntation can visualize the similarities and the
+the annotation of scRNA-seq data, and showed that the GRN-based annotation can visualize the similarities and the
 difference of cell clusters, which the conventional \ac{DEG}-based manual annotation could not address due to the objectives of \ac{DEA} to summerize the biological semantics 
 of the clusters.
 
@@ -214,7 +215,39 @@ Although we intended to require experimenters to curate marker genes to use
 in GRNs, overly recurrsive trials to find 
 
 \subsection*{Dropout-based binarization}
+With a map $q: \Gamma\times X\rightarrow \mathbb{N}$ which returns a raw gene counts
+of gene $^\forall g\in\Gamma$ for sample $^\forall x\in X$ where $\Gamma$ is the whole set of genes 
+and $X$ is the whole set of samples, here we introduce the coverage function $Coverage_{[x]}: \Gamma\rightarrow\mathbb{Q}$ 
+of cell class $[x]$ as follows:
+\begin{equation}\label{coverage}
+  Coverage_{[x]}(g):=\frac{
+    |\{x\;|\;x\in[x]\;s.t.\;q(g,x)\neq 0\}|
+  }{
+    |[x]|
+  }
+\end{equation}
+Note that $Coverage_{[x]}$ relies on $q$ only for identifying zeros in raw counts, therefore, 
+any kind of values converted from raw counts by a transformation $\psi: \mathbb{N}\rightarrow\mathbb{R}$ 
+such that $\psi^{-1}[\{0\}]=\{0\}$ can be used in lieu of $q(g, x)$. For instance, \ac{RPM} values 
+and $\log_2(RPM+1)$ are accepted (see Appendix for more detailed explanations).
+
 \subsection*{Weighted evaluation function}
+\begin{equation}\label{HQPM}
+  d^*([x], [y]) := 1 - \frac{|C_{[x]}(G)\cap C_{[y]}(G)|}{|C_{[x]}(G)|}
+  =1 - \frac{
+    |E_{[x]}(G)\cap E_{[y]}(G)|+|G|
+  }{
+    |E_{[x]}(G)|+|G|
+  }
+\end{equation}
+\begin{equation}\label{WHQPM}
+  Whqpm([x], [y]) := 1 - \frac{
+    |E_{[x]}(G)\cap E_{[y]}(G)|+\sum_{g\in G}Coverage_{[x]}(g)
+  }{
+    |E_{[x]}(G)|+\sum_{g\in G}Coverage_{[x]}(g)
+  }.
+\end{equation}
+Weighted Hamming quasi-pseudo-metric
 
 \section*{Discussion}
 I have no idea.
