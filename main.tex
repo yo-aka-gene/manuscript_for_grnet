@@ -11,7 +11,7 @@
 \usepackage{url}
 
 \title{
-  A graph-based practice of evaluating collective idendities of cell clusters
+  A graph-based practice of evaluating collective identities of cell clusters
 }
 \author[1,2]{Yuji Okano}
 \author[2]{Yoshitaka Kase}
@@ -63,7 +63,7 @@ is recognized as a prominent game changer of the molecular biology of this decad
 micro array and bulk RNA-seq, scRNA-seq can observe multidimensional gene expression profiles, while it also can 
 provide such information in single-cell-level. Although this informative assay have contributed to reveal detailed 
 biology of various cell types, the excessive resolution blurred the conceptual boundary between static cell types and 
-transient cell status\cite{regev2017human}. Consequently, clusters, chunks of sampels that shares similar geometrical properties in the 
+transient cell status\cite{regev2017human}. Consequently, clusters, chunks of samples that shares similar geometrical properties in the 
 data space overwrote the classical notion of cell types. As the cell clusters are dependent on sampling stochasticity 
 of the dataset, and their biological properties might sway from the original doctrine of cell types\cite{okano2023set}. Hence, a theoretical 
 backbone and a effective method to glue the theory and real data are essential to identify universal characters of specific 
@@ -84,11 +84,11 @@ pair of cell classes to real numbers are defined as follows\cite{okano2023set}:
   d^*([x], [y]) := 1 - \frac{|C_{[x]}(G)\cap C_{[y]}(G)|}{|C_{[x]}(G)|}.
 \end{equation}
 Eq. \eqref{d_asterisk} is derived from the Hamming distance function (a metric function that measures the difference of two 
-character strings) and modeified to embrace the tendency of the \ac{PC} algorithm, one of the most 
+character strings) and modified to embrace the tendency of the \ac{PC} algorithm, one of the most 
 simple bayesian network algorithms\cite{okano2023set,bookstein2002generalized, spirtes2000causation}. With those concepts, we also proposed frameworks to compare the 
 similarities of given two cell clusters. Our scheme comprises two fundamental steps: formation of GRNs and 
 evaluation of their similarity (\figurename{ 1A}). As the concept of cell classes are independent from the choice of data 
-analysis methods, this frameowrk itself can be applied into various cases regardless of any feature engineering (such 
+analysis methods, this framowork itself can be applied into various cases regardless of any feature engineering (such 
 as the data preprocessing) and clustering methods.
 
 The framework can be applied into the annotation of scRNA-seq data when a referential dataset is available 
@@ -102,10 +102,10 @@ data as estimation, and the one from the point of view of the referential data a
 annotations can be visualized with planet plots, where the subjective cell class (here we denote it $[x]$) is located in 
 the center and the radii of the circles reflect $d^*([x],\cdot)$ values for all cell classes placed on the circumferences.
 
-The performance of those frameworks build around GRNs have its bottoleneck in the step to create GRNs, and 
+The performance of those frameworks build around GRNs have its bottleneck in the step to create GRNs, and 
 the process can be broken down into the configuration of the vertex sets and the choice of the network algorithm 
 (\figurename{ 1C}). As well as the methods of the feature engineering and the clustering, each step of the GRN formation 
-also has a variety of options. In the last paper, we introduced a combined method of manual curration referring 
+also has a variety of options. In the last paper, we introduced a combined method of manual curation referring 
 review articles and a \ac{ML}-based feature selection using a \ac{GBDT} 
 model with the L1 and the L2 regularizations\cite{okano2023set}. For the manual supervision, \ac{GO} terms can be 
 another information source. Nevertheless, a priori identification of the sample components are essential to create 
@@ -159,7 +159,7 @@ To demonstrate those difficulties, we analyzed an open source scRNA-seq data of 
 cells from 10X Genomics (for short, we named the dataset PMBC3k in this research).
 
 \subsubsection*{1. Difficulty of effective gene selection}
-In our previous study, we proposed a method to combine supervised curration reffering a review paper and a 
+In our previous study, we proposed a method to combine supervised curation reffering a review paper and a 
 
 $\vdots$
 
@@ -295,8 +295,8 @@ We performed the enrichment analysis using gprofiler2\cite{gprofiler2}, and visu
 
 \subsection*{Other visualizations}
 \subsubsection*{Alluvial plot of gene symbols and GO terms}
-The glial markers were selected referring review articles, and the tagged GO terms were querried using mygene.py. 
-Then, all gene symbols subscribed with each GO terms were querried again. The visualization was implemented 
+The glial markers were selected referring review articles, and the tagged GO terms were queried using mygene.py. 
+Then, all gene symbols subscribed with each GO terms were queried again. The visualization was implemented 
 with Matplotlib, Numpy, Pandas.
 
 \section*{Resource availability}
