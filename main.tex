@@ -44,6 +44,10 @@
 \DeclareAcronym{GO}{short = GO, long  = gene ontology}
 \DeclareAcronym{QC}{short = QC, long  = quality control}
 \DeclareAcronym{MMHC}{short = MMHC, long  = max-min hill-climbing}
+\DeclareAcronym{AUC}{short = AUC, long  = area under the curve}
+\DeclareAcronym{ROC}{short = ROC, long  = receiver operating characteristic}
+\DeclareAcronym{AP}{short = AP, long  = average precision}
+\DeclareAcronym{PR}{short = PR, long  = precision-recall}
 
 \DeclareCaptionLabelFormat{mainfigs}{\textbf{Figure #2}}
 \captionsetup[figure]{labelformat=mainfigs}
@@ -151,25 +155,68 @@ cellular identities (i.e., cell classes).
 
 \section*{Results}
 \subsection*{Challenges of the framework of GRN-based methods}
-In this reserch, we revisited the workflow of the GRN-based annotation
-
-$\vdots$
-
-To demonstrate those difficulties, we analyzed an open source scRNA-seq data of peripheral blood mononuclear 
-cells from 10X Genomics (for short, we named the dataset PMBC3k in this research).
+Here in this section, we will point out the following three challenges regarding practical uses of the GRN-based 
+annotation to solidify our goals for this article.
 
 \subsubsection*{1. Difficulty of effective gene selection}
-In our previous study, we proposed a method to combine supervised curation reffering a review paper and a 
+In our previous study, we proposed a method of choosing marker genes by combining supervised curation referring a review paper and a ML-based 
+feature selection leveraging the feature importance in L1-regularized GBDT model. 
+Although we have mentioned that there are various possibile options for the marker gene selection, each strategy has its unique drawback.
 
-$\vdots$
+Supervison by the experimenter struggles with completeness and arbitrariness even though we cite some reliable 
+sources (e.g., review papers, or GO terms). For example, in the last paper, we selected SLC1A2, VIM, and AQP4 
+as glial markers referring a review article\cite{zhang2015molecular}. Those glial markers are subcrribed to 92 GO terms in total, and there 
+are other genes than the three tagged with those terms (\figurename{ 2A}). This example highlights the incompleteness of 
+the three genes to represent all aspects of glia. Furthermore, the many-to-many correspondence of genes and GO 
+terms would make it a significant challenge to draw a clear and reasonable line between the genes adopted as 
+marker genes and the others.
 
-The standard workflow consists the \ac{QC} of the data, normalization such as \ac{RPM} transformation and logarithmic transformation, \ac{HVG} extraction, demensionality reduction such as \ac{PCA}, 
-\ac{TSVD}, \ac{UMAP}\cite{umap}, etc., clustering, \ac{DEA}, annotation, and other downstream analysis (\figurename{ S1}).
+ML-based approach is another method we implemented in our last report, and has its unique problems. As we 
+shown in \figurename{ S1}, the standard workflow of the scRNA-seq data analysis consists several steps: the \ac{QC} 
+of the data; normalization such as \ac{RPM} transformation and logarithmic transformation; 
+\ac{HVG} extraction; demensionality reduction such as \ac{PCA}, 
+\ac{TSVD}, \ac{UMAP}\cite{umap}, 
+etc.; clustering; \ac{DEA}; annotation; and other downstream analysis\cite{luecken2019current}. Given that creating a good ML model 
+requires plenty of time other than actual run times for fine tuning the model configurations, those trials might take 
+excessive efforts just for gene selection for GRNs even when the annotation is unlikely to be the ultimate goal of 
+the data analysis. Additionally, even with a ML model that performs well, extracting informative features can suffer 
+from arbitrariness about the selection. To demonstrate those difficulties, we analyzed an open source scRNA-seq 
+data of peripheral blood mononuclear cells distributed from 10X Genomics (for short, we called the dataset with 
+an alias, PMBC3k, in this research). Starting from QC, we proceeded to leiden clustering to have 9 clusters (0$\sim$8) 
+as shown in \figurename{ 2B}. Then, we created a GBDT model for multiclass classification (which predicts clusters from 
+the gene expression values). The model seemed to perform well in regards of the \ac{AUC} of 
+the \ac{ROC} curve, the \ac{AP} of the \ac{PR} curve, and 
+the accuracy score (\figurename{ S2A-D}). In the previous article, we made a three-class classification model and utilized 
+the feature importance as a criterion (\figurename{ 2C}). However, the same approach did not work for the 
+nine-class classification model this time because there is no clear boundary between key features and negligible ones 
+even within the top 10 features of importance. Note that GRNs require pairwise calculation of genes, accordingly, 
+modelers should avoid using an excessive number of genes for computational efficiency. Other than the feature 
+importance scores, SHAP scores can be an alternative metric to visualize the correspondence between the features 
+and the classifications. Even though SHAP scores provided more intuitive and precise explanations (\figurename{ 2D and S3A-I}), 
+it is still a challenge to introduce an objective thresholds for gene selection beacuse the distributions 
+of SHAP scores drastically vary across different classes. Consequently, the ML-based approach is not the most 
+effective way to select marker genes to represent the cell classes because it also requires the modeler's subjectivity as well as reference based supervision 
+despite it is more time-consuming. ML-based approaches might work well if the character of the samples are 
+completely unknown, or the concensus among the experts is yet to be settled. However, even under such conditions, 
+alternative methods such as DEG-based approach should be accounted.
+
+The DEG-based approach is another alternative that can be smoothly added onto the regualr scRNA-seq data 
+analysis pipeline. In spite of its heuristicity and promptness, this method also has a shortcoming. Using the 
+PBMC3k data processed in the exact same way as what we performed in the last section, we will exhibit an 
+example hereby. The advantage of the GRN-based approach is the switfness of the overall procedure by directly 
+applying the top DEGs into the vertex sets. Accordingly, we applied the top 5 DEGs of each cluster (\figurename{ S4A}), 
+created GRNs based on those genes (\figurename{ S4B}), and calculated the $d^*$ values (\figurename{ 2E}). Looking at the bottom 
+row of the heatmap, the $d^*$ values were all zero for all clusters from the point of view of cluster 8, implying that 
+the clusters 0$\sim$7 are indistinguishable from the cluster 8. Given that the cluster 8 showed significantly different 
+expression patterns of the top 5 marker genes (\figurename{ 2F}), the results of $d^*$ values were against intuition. Additionally, the 
+top 30 upregulated GO terms of each cluster indicate that cluster 8 can be annotated as megakaryocyte
+
 
 Considering the fact that 
 our method's primary application is the annotation of scRNA-seq data, 
 we need an alternative method to find marker genes to reduce computational costs and 
 streamline the overall time required to initiate main analyses.
+
 
 \subsubsection*{2. Statistical issue: independence v.s. uncorrelation}
 The statistical independence of two events $A$ and $B$ is defined as a situation where the following equation holds:
@@ -184,7 +231,9 @@ $X$ and $Y$ is defined as follows:
 where $E[\cdot]$ is the expected value, $Var[\cdot]$ is the variance, and $Cov(\cdot, \cdot)$ is the covariance. Independent variables 
 exhibit a correlation coefficient of zero, the converse is false (e.g., when $X\sim U(-1, 1)$, where $U(-1, 1)$ refers to the uniform 
 distribution over the interval from -1 to 1, $Corr(X, X^2)=0$ although $X$ and $X^2$ are dependent). Therefore, strictly 
-speaking, it is not appropriate to substitute the chi-square test or the exact test with the t test of correlation.
+speaking, it is not appropriate to substitute the chi-square test or the exact test with the t test of correlation. 
+Furthermore, the correlation-based method does not work well when the gene expression matrices regarding the 
+selected genes are highly sparse.
 
 However, we introduced a correlation-based algorithm to get GRNs compromising rigor in order to adjust to 
 continuous gene expression values. To address this issue, we need to implement an effective method to binarize the 
@@ -197,7 +246,7 @@ cells from 10X Genomics (for short, we named the dataset PMBC3k in this research
 
 \begin{figure}[htb]
   \centering
-  \includegraphics[scale=0.8]{./figs/exported/figure_2.png}
+  \includegraphics[scale=0.7]{./figs/exported/figure_2.png}
   \caption{Examples of the major issues on the GRN-based frameworks}
   \label{bc}
 \end{figure}
@@ -290,8 +339,16 @@ Pandas\cite{pandas}, Numpy, Matplotlib\cite{matplotlib}, Seaborn\cite{seaborn}) 
 \subsubsection*{Clustering and DE analysis}
 We performed leiden clustering, DE analysis using Scanpy.
 
-\subsubsection*{Enrichment analysis}
-We performed the enrichment analysis using gprofiler2\cite{gprofiler2}, and visualized the results with Matplotlib and Seaborn.
+\subsubsection*{Multiclass classification GBDT model}
+We randomly split the PBMC3k data into training/validation/test data (3:1:1), and with the traiuning and validation 
+data, a GBDT model minimizing the multiclass-logarithtic loss function was created using LightGBM's 
+framework. We implemented the model with a wrapper in Optuna to automatically tune the hyperparameters. The 
+models performance were tested with the ROC curves and the PR curves using Scikit-learn and Matplotlib. We 
+also visualized the feature importance values implemented in LightGBM. SHAP scores were calculated and visualized 
+with a Python package, Shap.
+
+\subsubsection*{GO analysis}
+We performed the GO analysis using gprofiler2\cite{gprofiler2}, and visualized the results with Matplotlib and Seaborn.
 
 \subsection*{Other visualizations}
 \subsubsection*{Alluvial plot of gene symbols and GO terms}
