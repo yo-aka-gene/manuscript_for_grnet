@@ -44,6 +44,7 @@
 \DeclareAcronym{GO}{short = GO, long  = gene ontology}
 \DeclareAcronym{QC}{short = QC, long  = quality control}
 \DeclareAcronym{MMHC}{short = MMHC, long  = max-min hill-climbing}
+\DeclareAcronym{OvR}{short = OvR, long  = one-versus-rest}
 \DeclareAcronym{AUC}{short = AUC, long  = area under the curve}
 \DeclareAcronym{ROC}{short = ROC, long  = receiver operating characteristic}
 \DeclareAcronym{AP}{short = AP, long  = average precision}
@@ -186,9 +187,10 @@ data of peripheral blood mononuclear cells distributed from 10X Genomics (for sh
 an alias, PMBC3k, in this research). Starting from QC, we proceeded to leiden clustering to have 9 clusters (0$\sim$8) 
 as shown in \figurename{ 2B}. Then, we created a GBDT model for multiclass classification (which predicts clusters from 
 the gene expression values). The model seemed to perform well in regards of the \ac{AUC} of 
-the \ac{ROC} curve, the \ac{AP} of the \ac{PR} curve, and 
-the accuracy score (\figurename{ S2A-D}). In the previous article, we made a three-class classification model and utilized 
-the feature importance as a criterion (\figurename{ 2C}). However, the same approach did not work for the 
+the \ac{OvR} \ac{ROC} curve as well as the macro average of 
+them, the \ac{AP} of the \ac{OvR} \ac{PR} curve accompanied with the micro average of 
+them, and the accuracy score (\figurename{ S2A-D}). In the previous article, we made a three-class classification model 
+and utilized the feature importance as a criterion (\figurename{ 2C}). However, the same approach did not work for the 
 nine-class classification model this time because there is no clear boundary between key features and negligible ones 
 even within the top 10 features of importance. Note that GRNs require pairwise calculation of genes, accordingly, 
 modelers should avoid using an excessive number of genes for computational efficiency. Other than the feature 
@@ -219,9 +221,10 @@ the new $d^*$ values indicating that the clusters 0$\sim$7 were equally differen
 we explored the optimal number of the DEGs to use for the vertex sets, the marker-gene selection is an intricate 
 step that requires repetitive adjustments and validations. 
 
-Considering the fact that our method's primary application is the annotation of scRNA-seq data, 
-we need an alternative method to find marker genes to reduce computational costs and 
-streamline the overall time required to initiate main analyses.
+So far we have point-by-point raised issues related to respective marker-gene selection methods. Considering the 
+fact that our method's primary application is the annotation of scRNA-seq data, which is unlikely to be the 
+ultimate goals of the scRNA-seq data analyses, we need an alternative method to find marker genes to reduce 
+computational costs and streamline the overall time required to initiate main analyses.
 
 
 \subsubsection*{2. Statistical issue: independence v.s. uncorrelation}
@@ -239,7 +242,12 @@ exhibit a correlation coefficient of zero, the converse is false (e.g., when $X\
 distribution over the interval from -1 to 1, $Corr(X, X^2)=0$ although $X$ and $X^2$ are dependent). Therefore, strictly 
 speaking, it is not appropriate to substitute the chi-square test or the exact test with the t test of correlation. 
 Furthermore, the correlation-based method does not work well when the gene expression matrices regarding the 
-selected genes are highly sparse.
+selected genes are highly sparse. As Eq. \eqref{corr} holds if and only if both $Var[X]$ and $Var[Y]$ are non-zero values, under 
+circumstances where all samples in a cluster exhibit zero counts for certain genes required in the vertex set, 
+the correlation-based approach is inappropriate. This situation is by no means an imaginary counterexample 
+unrealistically hypothesized just for criticism. A phenomenon called dropout is a characteristic of scRNA-seq data 
+where gene expressions were not detected due to the inefficiency and the stochasticity of scRNA-seq\cite{qiu2020embracing}, and it 
+results in the high sparsity of scRNA-seq data matices.
 
 However, we introduced a correlation-based algorithm to get GRNs compromising rigor in order to adjust to 
 continuous gene expression values. To address this issue, we need to implement an effective method to binarize the 
@@ -259,12 +267,13 @@ cells from 10X Genomics (for short, we named the dataset PMBC3k in this research
     \textbf{A}: Alluvial plot showing the many-to-many correspondence of gene symbols and GO terms.
     \textbf{B}: UMAP of the PBMC3k dataset. The markers were colored according to the cluster.
     \textbf{C}: The top 10 genes of the highest feature imporance of the multiclass classification LightGBM model.
-    \textbf{D}: 
-    \textbf{E}:
-    \textbf{F}: 
-    \textbf{G}: 
-    \textbf{H}: 
-    \textbf{I}: 
+    \textbf{D}: The top 20 genes of the highest mean SHAP values of the multiclass classification LightGBM model.
+    \textbf{E}: The $d^*$ values based on the GRNs of the top 5 DEGs. 
+    The rows correspond to the subjective cell classes, and the columns correspond to the objective ones.
+    \textbf{F}: The top 5 DEGs of the cluster 8.
+    \textbf{G}: The GRNs of the clusters 0$\sim$8 based on the top 5 DEGs of the cluster 8.
+    \textbf{H}: The GRNs of the clusters 0$\sim$8 based on the top 10 DEGs of the cluster 8.
+    \textbf{I}: The re-calculated $d^*$ values among the GRNs based on the top 10 DEGs of the cluster 8.
   }
 \end{figure}
 
