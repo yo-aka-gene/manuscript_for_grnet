@@ -119,11 +119,12 @@ Accordingly, the conversion from raw counts to $\log_k(RPM+1)$ values are $\psi_
 \begin{figure}[htb]
   \centering
   \includegraphics[scale=0.7]{./figs/exported/figure_s2.png}
-  \caption{The top 5 DEGs and the GRNs of the clusters in PBMC3k}
+  \caption{The performance of the GBDT model}
   \legend{
-    \textbf{A}: Violin plot of DEGs of the clusters (top 5 for each). 
-    \textbf{B}: GRNs of the clusters. GRNs in a row share the same set of genes
-    (DEGs of the subjective clusters) for the nodes
+    \textbf{A}: The ROC curves visualizing the prediction performances of the clusters 0$\sim$8 and their macro average
+    \textbf{B}: The PR curves visualizing the prediction performances of the clusters 0$\sim$8 and their micro average
+    \textbf{C}: A pariwise comparison of the ground-true labels and the predictions
+    \textbf{D}: A UMAP visualization of the prediction accuracy
   }
   \label{fig_s2}
 \end{figure}
@@ -141,9 +142,9 @@ Accordingly, the conversion from raw counts to $\log_k(RPM+1)$ values are $\psi_
   \includegraphics[scale=0.75]{./figs/exported/figure_s4.png}
   \caption{The top 5 DEGs and the GRNs of the clusters in PBMC3k}
   \legend{
-    \textbf{A}: Violin plot of DEGs of the clusters (top 5 for each). 
+    \textbf{A}: Violin plot of DEGs of the clusters (top 5 for each)
     \textbf{B}: GRNs of the clusters. GRNs in a row share the same set of genes
-    (DEGs of the subjective clusters) for the nodes
+    (DEGs of the subjective clusters) selected for the vertex sets
   }
   \label{fig_s4}
 \end{figure}

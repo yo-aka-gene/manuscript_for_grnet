@@ -48,6 +48,7 @@
 \DeclareAcronym{ROC}{short = ROC, long  = receiver operating characteristic}
 \DeclareAcronym{AP}{short = AP, long  = average precision}
 \DeclareAcronym{PR}{short = PR, long  = precision-recall}
+\DeclareAcronym{SHAP}{short = SHAP, long  = shapley additive explanations}
 
 \DeclareCaptionLabelFormat{mainfigs}{\textbf{Figure #2}}
 \captionsetup[figure]{labelformat=mainfigs}
@@ -191,8 +192,8 @@ the feature importance as a criterion (\figurename{ 2C}). However, the same appr
 nine-class classification model this time because there is no clear boundary between key features and negligible ones 
 even within the top 10 features of importance. Note that GRNs require pairwise calculation of genes, accordingly, 
 modelers should avoid using an excessive number of genes for computational efficiency. Other than the feature 
-importance scores, SHAP scores can be an alternative metric to visualize the correspondence between the features 
-and the classifications. Even though SHAP scores provided more intuitive and precise explanations (\figurename{ 2D and S3A-I}), 
+importance scores, the \ac{SHAP} scores can be an alternative metric to visualize the correspondence between the features 
+and the classifications\cite{shap}. Even though SHAP scores provided more intuitive and precise explanations (\figurename{ 2D and S3A-I}), 
 it is still a challenge to introduce an objective thresholds for gene selection beacuse the distributions 
 of SHAP scores drastically vary across different classes. Consequently, the ML-based approach is not the most 
 effective way to select marker genes to represent the cell classes because it also requires the modeler's subjectivity as well as reference based supervision 
@@ -206,14 +207,19 @@ PBMC3k data processed in the exact same way as what we performed in the last sec
 example hereby. The advantage of the GRN-based approach is the switfness of the overall procedure by directly 
 applying the top DEGs into the vertex sets. Accordingly, we applied the top 5 DEGs of each cluster (\figurename{ S4A}), 
 created GRNs based on those genes (\figurename{ S4B}), and calculated the $d^*$ values (\figurename{ 2E}). Looking at the bottom 
-row of the heatmap, the $d^*$ values were all zero for all clusters from the point of view of cluster 8, implying that 
-the clusters 0$\sim$7 are indistinguishable from the cluster 8. Given that the cluster 8 showed significantly different 
-expression patterns of the top 5 marker genes (\figurename{ 2F}), the results of $d^*$ values were against intuition. Additionally, the 
-top 30 upregulated GO terms of each cluster indicate that cluster 8 can be annotated as megakaryocyte
+row of the heatmap, the $d^*$ values were all zero from the point of view of cluster 8 even though it 
+showed significantly different expression patterns of the top 5 marker genes (\figurename{ 2F}). Additionally, the top 30 
+upregulated GO terms of each cluster indicate that cluster 8 could exclusively be annotated as megakaryocytes, but 
+the remainders exhibited different cellular characters (\figurename{ S5A-I}). Those results indicated that the GRNs did 
+not work properly for identification of the cluster 8 because the zero $d^*$ values for the clusters 0$\sim$7 implied that those 
+clusters and the cluster 8 were indistinguishable in terms of the GRNs with the given vertex sets. Increasing 
+the number of DEGs to 10, a edge added to the GRN for the cluster 8, which alteration made the $d^*$ values non-zero 
+(\figurename{ 2H-I}). As the GO terms suggested that there were no cluster of megakaryocytes other than the cluster 8, 
+the new $d^*$ values indicating that the clusters 0$\sim$7 were equally different from the cluster 8 seemed correct. Likewise 
+we explored the optimal number of the DEGs to use for the vertex sets, the marker-gene selection is an intricate 
+step that requires repetitive adjustments and validations. 
 
-
-Considering the fact that 
-our method's primary application is the annotation of scRNA-seq data, 
+Considering the fact that our method's primary application is the annotation of scRNA-seq data, 
 we need an alternative method to find marker genes to reduce computational costs and 
 streamline the overall time required to initiate main analyses.
 
@@ -249,6 +255,17 @@ cells from 10X Genomics (for short, we named the dataset PMBC3k in this research
   \includegraphics[scale=0.7]{./figs/exported/figure_2.png}
   \caption{Examples of the major issues on the GRN-based frameworks}
   \label{bc}
+  \legend{
+    \textbf{A}: Alluvial plot showing the many-to-many correspondence of gene symbols and GO terms.
+    \textbf{B}: UMAP of the PBMC3k dataset. The markers were colored according to the cluster.
+    \textbf{C}: The top 10 genes of the highest feature imporance of the multiclass classification LightGBM model.
+    \textbf{D}: 
+    \textbf{E}:
+    \textbf{F}: 
+    \textbf{G}: 
+    \textbf{H}: 
+    \textbf{I}: 
+  }
 \end{figure}
 
 
@@ -344,8 +361,8 @@ We randomly split the PBMC3k data into training/validation/test data (3:1:1), an
 data, a GBDT model minimizing the multiclass-logarithtic loss function was created using LightGBM's 
 framework. We implemented the model with a wrapper in Optuna to automatically tune the hyperparameters. The 
 models performance were tested with the ROC curves and the PR curves using Scikit-learn and Matplotlib. We 
-also visualized the feature importance values implemented in LightGBM. SHAP scores were calculated and visualized 
-with a Python package, Shap.
+also visualized the feature importance values implemented in LightGBM. The SHAP scores were calculated and visualized 
+with a Python package, Shap\cite{shap,shap_treeexplainer}.
 
 \subsubsection*{GO analysis}
 We performed the GO analysis using gprofiler2\cite{gprofiler2}, and visualized the results with Matplotlib and Seaborn.
