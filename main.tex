@@ -255,8 +255,14 @@ gene expression values so that the new algorithm would rely on the statistical t
 would make our algorithm align better to the original concept of our theory.
 
 \subsubsection*{3. Irresponsibility to gene expression values}
-To demonstrate this difficulty, we analyzed an open source scRNA-seq data of peripheral blood mononuclear 
-cells from 10X Genomics (for short, we named the dataset PMBC3k in this research).
+The GRNs were designed to represent cellular functions by having edges between two statistically dependent genes. 
+The correlation-based GRN generation is also rooted from the same idea and draws edges between two vertexes 
+where they exhibit correlations. Even though those strategies can visualize the co-occurence or the mutual exclusivity of 
+the gene expressions, actual expression values are dismissed. This failure leads to misassignments of cellular identities 
+in practical cases as well as the example of PBMC3k; the GRNs of the cluster 0 and 8 showed exactly 
+identical structures even though the expression patterns of the marker genes that forms the vertex set were significantly 
+different (\figurename{ 2F-G}). This example highlights not only the difficulty of the gene selection but also 
+the irresponsibility of GRNs to the gene expression values.
 
 \begin{figure}[htb]
   \centering
@@ -281,6 +287,24 @@ cells from 10X Genomics (for short, we named the dataset PMBC3k in this research
 \subsection*{Automated marker-gene suggestion}
 Although we intended to require experimenters to curate marker genes to use
 in GRNs, overly recurrsive trials to find 
+
+\begin{figure}[htb]
+  \centering
+  \includegraphics[scale=0.7]{./figs/exported/figure_3.png}
+  \caption{Jaccard index based automated marker gene suggestion}
+  \label{jibased}
+  \legend{
+    \textbf{A}: Venn diagram of the GO terms related to the three glial marker genes. 
+    Here we considered the intersection of the whole three set as a set of the pivotal GO terms defined by the three marker genes.
+    \textbf{B}: Jaccard index values of the GO terms related to the three glial marker genes.
+    The minimal value were adopted as the threshold for the automated gene selection.
+    \textbf{C}: Jaccard index values of the GO terms related to the three glial marker genes and 
+    other gene symbols subscribed to the pivotal GO terms.
+    \textbf{D}: Jaccard index values smaller than the threshold were shown in red and the others were shown in gray.
+    \textbf{E}: Jaccard index values of the GO terms related to the gene symbols included in the output gene list.
+  }
+\end{figure}
+
 
 \subsection*{Dropout-based binarization}
 With a map $q: \Gamma\times X\rightarrow \mathbb{N}$ which returns a raw gene counts
