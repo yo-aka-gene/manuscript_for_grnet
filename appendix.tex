@@ -104,6 +104,31 @@ Accordingly, the conversion from raw counts to $\log_k(RPM+1)$ values are $\psi_
   \stepcounter{equation} \tag{S-\theequation}
 \end{equation}
 
+\subsubsection*{
+  The logistic model of DOR
+}
+Although the mean expression values and the DOR values show a non-linear relationship, we tried to find a simple 
+non-linear conversion that enables the mean expression values to linearly fit to the DOR values. We leveraged the 
+logistic transformation (i.e., inverse logit transformation) so that the transformed values becomes positive and less 
+than 1. Introducing $u$ to be the variable for the transformed values as follows, we tried to fit the parameter $b$ ($b>0$) 
+so that $DOR\sim -2u + 2$ by minimizing the MSE:
+\begin{equation}\label{logistic transformation}
+  u := \frac{1}{1+e^{-b\cdot Mean}}.
+  \stepcounter{equation} \tag{S-\theequation}
+\end{equation}
+Note that the minimal value of $u$ is 0.5 (when $Mean=0$) and the following equation holds:
+
+\begin{equation}\label{lim}
+  \lim_{Mean\rightarrow\infty}u=1
+  \stepcounter{equation} \tag{S-\theequation}.
+\end{equation}
+In addition to those properties, the range of DOR is $0\leq DOR\leq 1$, and they are the reasons why we designed the 
+fitting line as $DOR\sim -2u + 2$. Consequently, the final form of the fitting curve can be denoted as follows:
+\begin{equation}\label{logistic model}
+  DOR\sim -\frac{2}{1+e^{-b\cdot Mean}}+2.
+  \stepcounter{equation} \tag{S-\theequation}
+\end{equation}
+
 \newpage
 \subsection*{Supplemental Figures}
 \begin{figure}[htb]
@@ -156,6 +181,17 @@ Accordingly, the conversion from raw counts to $\log_k(RPM+1)$ values are $\psi_
     \textbf{A-I}: The top 30 GO terms for cluster 0$\sim$8 respectively
   }
   \label{fig_s5}
+\end{figure}
+\begin{figure}[htb]
+  \centering
+  \includegraphics[scale=0.7]{./figs/exported/logisticmodel.png}
+  \caption{The top 30 upregulated GO terms of the clusters in PBMC3k}
+  \legend{
+    \textbf{A}: The logistic model of DOR. 
+    \textbf{B}: The performance comparison with the Poisson regression model (Poisson) and 
+    the negative-binomial regression model (NB).
+  }
+  \label{fig_s6}
 \end{figure}
 
 \end{document}
