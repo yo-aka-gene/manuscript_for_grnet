@@ -116,7 +116,7 @@ so that $DOR\sim -2u + 2$ by minimizing the MSE:
   u := \frac{1}{1+e^{-b\cdot Mean}}.
   \stepcounter{equation} \tag{S-\theequation}
 \end{equation}
-Note that the minimal value of $u$ is 0.5 (when $Mean=0$) and the following equation holds:
+Note that the minimal value of $u$ is 0.5 (when $Mean=0$) and the following equation holds for the limit:
 
 \begin{equation}\label{lim}
   \lim_{Mean\rightarrow\infty}u=1
@@ -181,17 +181,6 @@ fitting line as $DOR\sim -2u + 2$. Consequently, the final form of the fitting c
     \textbf{A-I}: The top 30 GO terms for cluster 0$\sim$8 respectively
   }
   \label{fig_s5}
-\end{figure}
-\begin{figure}[htb]
-  \centering
-  \includegraphics[scale=0.7]{./figs/exported/logisticmodel.png}
-  \caption{The top 30 upregulated GO terms of the clusters in PBMC3k}
-  \legend{
-    \textbf{A}: The logistic model of DOR. 
-    \textbf{B}: The performance comparison with the Poisson regression model (Poisson) and 
-    the negative-binomial regression model (NB).
-  }
-  \label{fig_s6}
 \end{figure}
 
 \end{document}

@@ -50,6 +50,9 @@
 \DeclareAcronym{AP}{short = AP, long  = average precision}
 \DeclareAcronym{PR}{short = PR, long  = precision-recall}
 \DeclareAcronym{SHAP}{short = SHAP, long  = shapley additive explanations}
+\DeclareAcronym{DOR}{short = DOR, long  = dropout rate}
+\DeclareAcronym{LM}{short = LM, long  = logistic model}
+\DeclareAcronym{NB}{short = NB, long  = negative binomial}
 
 \DeclareCaptionLabelFormat{mainfigs}{\textbf{Figure #2}}
 \captionsetup[figure]{labelformat=mainfigs}
@@ -184,7 +187,7 @@ excessive efforts just for gene selection for GRNs even when the annotation is u
 the data analysis. Additionally, even with a ML model that performs well, extracting informative features can suffer 
 from arbitrariness about the selection. To demonstrate those difficulties, we analyzed an open source scRNA-seq 
 data of peripheral blood mononuclear cells distributed from 10X Genomics (for short, we called the dataset with 
-an alias, PMBC3k, in this research). Starting from QC, we proceeded to leiden clustering to have 9 clusters (0$\sim$8) 
+an alias, PBMC3k, in this research). Starting from QC, we proceeded to leiden clustering to have 9 clusters (0$\sim$8) 
 as shown in \figurename{ 2B}. Then, we created a GBDT model for multiclass classification (which predicts clusters from 
 the gene expression values). The model seemed to perform well in regards of the \ac{AUC} of 
 the \ac{OvR} \ac{ROC} curve as well as the macro average of 
@@ -221,9 +224,9 @@ the new $d^*$ values indicating that the clusters 0$\sim$7 were equally differen
 we explored the optimal number of the DEGs to use for the vertex sets, the marker-gene selection is an intricate 
 step that requires repetitive adjustments and validations. 
 
-So far we have point-by-point raised issues related to respective marker-gene selection methods. Considering the 
-fact that our method's primary application is the annotation of scRNA-seq data, which is unlikely to be the 
-ultimate goals of the scRNA-seq data analyses, we need an alternative method to find marker genes to reduce 
+So far we have point-by-point raised issues associated with respective marker-gene selection methods.
+Considering the fact that our method's primary application is the annotation of scRNA-seq data, which is unlikely to be 
+the ultimate goals of the scRNA-seq data analyses, we need an alternative method to find marker genes to reduce 
 computational costs and streamline the overall time required to initiate main analyses.
 
 
@@ -284,9 +287,29 @@ the irresponsibility of GRNs to the gene expression values.
 \end{figure}
 
 
-\subsection*{Automated marker-gene suggestion}
-Although we intended to require experimenters to curate marker genes to use
-in GRNs, overly recurrsive trials to find 
+\subsection*{Semi-automated marker-gene suggestion}
+Although we intended to require experimenters to curate marker genes to use in GRNs, manual supervision struggles 
+with arbitrariness and imperfection of the marker genes. Other semi-automated approaches, namely ML-based and 
+DEG-based methods, often require overly recurrsive trials to find optimal sets of marker genes. To improve the 
+fluidity of the workflow, it is essential to introduce a novel method to collect marker genes efficiently.
+
+To achieve that goal, we implemented an algorithm to automatically suggest similar genes to supplement given 
+marker genes. We leveraged overlapped GO terms of the given marker genes and mapped them back to gene 
+symbols. For instance, the three glial marker genes shares two GO terms in their intersection (\figurename{ 3A}), and the 
+similarities of their GO terms can be set-theoretically defined with Jaccard index values (\figurename{ 3B}). Here we 
+interpreted that: 1) the intersection of the Venn diagram contained the pivotal GO terms that reflected the biological 
+semantics collectively defined by the given marker genes; and 2) the minimal Jaccard index value was the 
+indicator of the similarity about the group of genes (therefore it could work as a threshold of acceptance 
+when other genes are added). To find new genes without altering biological meaning of the list, we querried gene symbols 
+tagged with the pivotal GO terms (\figurename{ 3C}), filtered out genes that exhibited lower Jaccard index values between 
+any gene in the original list (\figurename{ 3D}), and the remainders formed the new gene list (\figurename{ 3E}).
+
+Likewise we implemented the combined method of the manual and ML-based marker gene selection on the 
+GRN-based annotation using a referential dataset (the labeling, which evaluates the $d^*$ values from the referential 
+clusters to the query clusters), such methods that require manual assignment of marker genes are suitable for characterizing 
+clusters of known cellualr identities (i.e., pre-annotated clusters in referential datasets). Accordingly, 
+our new proposal can be applied to similar cases.
+
 
 \begin{figure}[htb]
   \centering
@@ -307,6 +330,44 @@ in GRNs, overly recurrsive trials to find
 
 
 \subsection*{Dropout-based binarization}
+As we discussed above, the dropout can be considered as an example for the pitfalls of the corrlation-based algorithm.
+On the otherhand, the dropouts are recently studied well to be turned out that the zero inflation are closely related 
+to data attributes such as cell types\cite{qiu2020embracing}. Inheriting from these ideas, we considered that the dropouts can be a good 
+indicator of enriched gene expressions. Contrary, some experts have been opposing to the thoughts on exploiting the dropouts and have 
+developped dropout imputation algorithms. To clarify our point, here we examined how dropouts explains the data 
+using the PBMC3k dataset and new group of datasets obtained by Mereu and the colleagues\cite{mereu2020benchmarking} (hereby 
+we called the group of datasets Mereu2020).
+
+First, we validated if the \ac{DOR}, the proportion of zeros in the count data of a gene, associated 
+with the mean values ($log_2(RPM+1)$) in the PBMC3k data. Although the DOR values and the mean values 
+exhibited a non-linear correspondence, we could successfully establish a linear formulation with a simple logistic 
+transformation on the mean expression values (See Appendix for details). The logistic-transformed mean values 
+fitted well to the linear calibration curve scoring 0.993 in the coefficient of determination ($R^2$), and we named the 
+inverse-transformed curve aligned with the data distribution in the scatter plot of the mean values and the DOR 
+(\figurename{ 4A}). We named the calibration curve the \ac{LM}. To benchmark the performance of the LM, 
+we made a Poisson regression model and a \ac{NB} regression model, as those regression models are 
+regular choices for modeling dropout events\cite{choi2020bayesian}.
+
+\begin{figure}[htb]
+  \centering
+  \includegraphics[scale=0.7]{./figs/exported/logisticmodel.png}
+  \caption{The top 30 upregulated GO terms of the clusters in PBMC3k}
+  \legend{
+    \textbf{A}: The logistic model of DOR. 
+    \textbf{B}: The performance comparison with the Poisson regression model (Poisson) and 
+    the negative-binomial regression model (NB).
+  }
+  \label{logistic model}
+\end{figure}
+
+Mereu2020 includes 15 superfamilies where the same sample components were measured across different protocols 
+(e.g., different platforms, or different sequencing depth) in order to benchmark scRNA-seq protocols\cite{mereu2020benchmarking}.
+
+
+\subsection*{Weighted evaluation function}
+Therefore, we defined the coverage (we define it as the presense of the 
+non-zero gene expression) and
+
 With a map $q: \Gamma\times X\rightarrow \mathbb{N}$ which returns a raw gene counts
 of gene $^\forall g\in\Gamma$ for sample $^\forall x\in X$ where $\Gamma$ is the whole set of genes 
 and $X$ is the whole set of samples, here we introduce the coverage function $Coverage_{[x]}: \Gamma\rightarrow\mathbb{Q}$ 
@@ -323,7 +384,6 @@ any kind of values converted from raw counts by a transformation $\psi: \mathbb{
 such that $\psi^{-1}[\{0\}]=\{0\}$ can be used in lieu of $q(g, x)$. For instance, \ac{RPM} values 
 and $\log_2(RPM+1)$ are accepted (see Appendix for more detailed explanations).
 
-\subsection*{Weighted evaluation function}
 \begin{equation}\label{HQPM}
   d^*([x], [y]) := 1 - \frac{|C_{[x]}(G)\cap C_{[y]}(G)|}{|C_{[x]}(G)|}
   =1 - \frac{
@@ -340,6 +400,9 @@ and $\log_2(RPM+1)$ are accepted (see Appendix for more detailed explanations).
   }.
 \end{equation}
 Weighted Hamming quasi-pseudo-metric
+
+\subsection*{Benchmarking}
+To highlight the efficiency of the proposed methods, 
 
 \section*{Discussion}
 I have no idea.
@@ -374,12 +437,34 @@ correlations of continuous gene expression values (e.g., $log_2(RPM+1)$) using p
 \subsection*{scRNA-seq data analysis}
 \subsubsection*{Dataset List}
 The scRNA-seq data we used in this research were publicly available as online
-resources as follows:\\
+resources as follows:
+
+\begin{itemize}
+  \item PBMC3k: \url{https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/pbmc3k}
+  \item Mereu2020: \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE133549}
+  \begin{itemize}
+    \item Chromium V2 (deep): \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE133535}
+    \item Chromium V2 (shallow): \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE133536}
+    \item Chromium V2 (sn): \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE133546}
+    \item Chromium V3: \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE141469}
+    \item C1HT-medium: \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE133537}
+    \item C1HT-small: \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE133538}
+    \item CEL-seq2: \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE133539}
+    \item Drop-seq: \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE133540}
+    \item ICELL8: \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE133541}
+    \item MARS-Seq: \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE133542}
+    \item Quartz-Seq2: \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE133543}
+    \item gmcSCRB-seq: \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE133544}
+    \item ddSEQ: \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE133547}
+    \item inDrop: \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE133548}
+    \item Smart-Seq2: \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE133545}
+  \end{itemize}
+\end{itemize}
 M1C10X: \url{https://portal.brain-map.org/atlases-and-data/rnaseq/human-m1-10x}\\
 hFB: \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE165388}\\
-PBMC3k: \url{https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/pbmc3k}\\
 aHSPC: \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE137864}\\
-BCA: \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE149938}
+BCA: \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE149938}\\
+\cite{xie2021single}
 
 \subsubsection*{Preprocessing, dimensionality reduction, and visualization}
 We performed data preprocessing, dimensionality reduction, data visualization
@@ -399,6 +484,8 @@ with a Python package, Shap\cite{shap,shap_treeexplainer}.
 
 \subsubsection*{GO analysis}
 We performed the GO analysis using gprofiler2\cite{gprofiler2}, and visualized the results with Matplotlib and Seaborn.
+
+\subsubsection*{Statistical models of DOR and the benchmarking}
 
 \subsection*{Other visualizations}
 \subsubsection*{Alluvial plot of gene symbols and GO terms}
