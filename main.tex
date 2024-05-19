@@ -124,7 +124,7 @@ semi-automatically scoops DEGs. Regarding the network algorithms, we mentioned t
 options as well. In our previous paper, we implemented our codes using the numerical (i.e., correlation-based) PC 
 algorithms provided in Pgmpy\cite{pgmpy}, a python package for probablistic graphical models. Another variation of the PC 
 algorithm based on the chi-square test suitable for categorical data is also a realistic option if when the expression 
-values can be binalized in some ways. We also mentioned that the \ac{MMHC} algorithm, which 
+values can be binar ized in some ways. We also mentioned that the \ac{MMHC} algorithm, which 
 combines constraint-based and scoring-based methods\cite{tsamardinos2006max}, is one of promissing alternatives of the PC algorithm.
 
 \begin{figure}[htb]
@@ -170,7 +170,7 @@ Although we have mentioned that there are various possibile options for the mark
 
 Supervison by the experimenter struggles with completeness and arbitrariness even though we cite some reliable 
 sources (e.g., review papers, or GO terms). For example, in the last paper, we selected SLC1A2, VIM, and AQP4 
-as glial markers referring a review article\cite{zhang2015molecular}. Those glial markers are subcrribed to 92 GO terms in total, and there 
+as glial markers referring a review article\cite{zhang2015molecular}. Those glial markers are subcrribed to various GO terms in total, and there 
 are other genes than the three tagged with those terms (\figurename{ 2A}). This example highlights the incompleteness of 
 the three genes to represent all aspects of glia. Furthermore, the many-to-many correspondence of genes and GO 
 terms would make it a significant challenge to draw a clear and reasonable line between the genes adopted as 
@@ -333,10 +333,13 @@ our new proposal can be applied to similar cases.
 As we discussed above, the dropout can be considered as an example for the pitfalls of the corrlation-based algorithm.
 On the otherhand, the dropouts are recently studied well to be turned out that the zero inflation are closely related 
 to data attributes such as cell types\cite{qiu2020embracing}. Inheriting from these ideas, we considered that the dropouts can be a good 
-indicator of enriched gene expressions. Contrary, some experts have been opposing to the thoughts on exploiting the dropouts and have 
-developped dropout imputation algorithms. To clarify our point, here we examined how dropouts explains the data 
-using the PBMC3k dataset and new group of datasets obtained by Mereu and the colleagues\cite{mereu2020benchmarking} (hereby 
-we called the group of datasets Mereu2020).
+indicator of enriched gene expressions. In details, the binarization algorithm of our proposal determines non-zero 
+expression values as positive and zeros as negative. For example, the top two DEGs of the cluster 8 in PBMC3k, 
+PF4 and GNG11, were raraly expressed in the cluster 5 (\figurename{ 2F}), accordingly, the $2\times 2$ contingency table based on 
+the identification algorithm showed that the majority of the cluster 5 were classified double-negative (\figurename{ 4A}).
+
+Although we adopt the standpoint of dropout as a practical feature, some experts have opposed the idea of exploiting dropouts and have 
+developped dropout imputation algorithms. To clarify our point, here we examine how dropouts explain the data features.
 
 First, we validated if the \ac{DOR}, the proportion of zeros in the count data of a gene, associated 
 with the mean values ($log_2(RPM+1)$) in the PBMC3k data. Although the DOR values and the mean values 
@@ -344,17 +347,23 @@ exhibited a non-linear correspondence, we could successfully establish a linear 
 transformation on the mean expression values (See Appendix for details). The logistic-transformed mean values 
 fitted well to the linear calibration curve scoring 0.993 in the coefficient of determination ($R^2$), and we named the 
 inverse-transformed curve aligned with the data distribution in the scatter plot of the mean values and the DOR 
-(\figurename{ 4A}). We named the calibration curve the \ac{LM}. To benchmark the performance of the LM, 
+(\figurename{ 4B}). We named the calibration curve the \ac{LM}. To benchmark the performance of the LM, 
 we made a Poisson regression model and a \ac{NB} regression model, as those regression models are 
 regular choices for modeling dropout events\cite{choi2020bayesian}.
 
+
+using the PBMC3k dataset and new group of datasets obtained by Mereu and the colleagues\cite{mereu2020benchmarking} (hereby 
+we called the group of datasets Mereu2020).
+
 \begin{figure}[htb]
   \centering
-  \includegraphics[scale=0.7]{./figs/exported/logisticmodel.png}
-  \caption{The top 30 upregulated GO terms of the clusters in PBMC3k}
+  \includegraphics[scale=0.8]{./figs/exported/logisticmodel.png}
+  \caption{Dropout-based binarization and empirical investigations on DOR}
   \legend{
-    \textbf{A}: The logistic model of DOR. 
-    \textbf{B}: The performance comparison with the Poisson regression model (Poisson) and 
+    \textbf{A}: A dropout-based $2\times 2$ contingency table of PF4 and GNG11 for the cluster 5 in PBMC3k.
+    The $+$ refers to non-zero expression values and the $-$ to zeros.
+    \textbf{B}: The logistic model of DOR. 
+    \textbf{C}: The performance comparison with the Poisson regression model (Poisson) and 
     the negative-binomial regression model (NB).
   }
   \label{logistic model}
