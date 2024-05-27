@@ -23,7 +23,7 @@
 \pagenumbering{roman}
 \maketitle
 
-\section*{Appendix}
+\section*{Appendices}
 \subsection*{Supplemental Information}
 \subsubsection*{Cell clusters vs cells classes}
 A cell cluster refers to a stochastic chunk of samples neighbouring each other in the data space or spacific feature 
@@ -85,26 +85,6 @@ In this article, we simply introduced the notations of $[x]$ and $C_{[x]}(G)$ ai
 We recommend to refer to the original article for readers interested in the detailed explanations.
 
 \subsubsection*{
-  The preimage and general scRNA-seq data transformation
-}
-Let $^\forall A,B,C$ be sets such that $C\subset B$, and let $f:A\rightarrow B$ be a map. 
-The preimage of $C$ under $f$ (denoted as $f^{-1}[C]$) is defined as follows:
-\begin{equation}\label{preimage}
-  f^{-1}[C]:=\{a\;|\;a\in A\;s.t.\;f(a)\in C\}.
-  \stepcounter{equation} \tag{S-\theequation}
-\end{equation}
-Therefore, a function $\psi: \mathbb{N}\rightarrow\mathbb{R}$ such that $\psi^{-1}[\{0\}]=\{0\}$ returns zero 
-if and only if the input value is zero. This property is essential for $Coverage_{[x]}$ to identify non-zero values.
-
-Let $\psi_R:\mathbb{N}\rightarrow \mathbb{Q}$ as the RPM transformation from the raw counts, and let $\psi_L:\mathbb{Q}\rightarrow \mathbb{R}$ be the transformation 
-from RPM values to $\log_k(RPM+1)$ for all $k>0$. It is trivial that $\psi_R^{-1}[\{0\}]=\{0\}$ and $\psi_L^{-1}[\{0\}]=\{0\}$ hold.
-Accordingly, the conversion from raw counts to $\log_k(RPM+1)$ values are $\psi_L\circ\psi_R$, and the following equation holds:
-\begin{equation}\label{raw2logrpm}
-  (\psi_L\circ\psi_R)^{-1}[\{0\}]=\psi_R^{-1}[\psi_L^{-1}[\{0\}]]=\psi_R^{-1}[\{0\}]=\{0\}.
-  \stepcounter{equation} \tag{S-\theequation}
-\end{equation}
-
-\subsubsection*{
   The logistic model of DOR
 }
 Although the mean expression values and the DOR values show a non-linear relationship, we tried to find a simple 
@@ -126,6 +106,55 @@ In addition to those properties, the range of DOR is $0\leq DOR\leq 1$, and they
 fitting line as $DOR\sim -2u + 2$. Consequently, the final form of the fitting curve can be denoted as follows:
 \begin{equation}\label{logistic model}
   DOR\sim -\frac{2}{1+e^{-b\cdot Mean}}+2.
+  \stepcounter{equation} \tag{S-\theequation}
+\end{equation}
+
+\subsubsection*{Inverse predictions of LM, Poisson regression, and NB regression}
+The inverse prediction of LM can be formulated as follows by solving Eq. \eqref{logistic model} iff $DOR\neq 0$:
+\begin{equation}\label{inverse lm}
+  Mean\sim\log{(\frac{2-DOR}{DOR})^\frac{1}{b}}.
+  \stepcounter{equation} \tag{S-\theequation}
+\end{equation}
+
+As we used the logarithmic link function for both the Poisson regression models and the NB regression models, 
+those models can be formulated as follows:
+\begin{equation}\label{glm}
+  DOR\sim e^{b_0+b_1\cdot Mean}.
+  \stepcounter{equation} \tag{S-\theequation}
+\end{equation}
+Therefore, the inverse predictions of those models can be formulated as follows by solving Eq. \eqref{glm} iff $DOR\neq 0$:
+\begin{equation}\label{inverse glm}
+  Mean\sim\frac{-b_0+\log{DOR}}{b_1}.
+  \stepcounter{equation} \tag{S-\theequation}
+\end{equation}
+
+It is noteworthy that the $Mean$ value diverges into infinity as $DOR$ approaches to zero regardless of the choice 
+of the models. Therefore, performance comparison of the inverse prediction models was performed while excluding the data 
+with zero $DOR$ values to avoid metrics such as MAE diverge into infinity (in which case the result indicates 
+that all models perform exactly as poorly as the others by generating infinity prediction errors on average).
+
+\subsubsection*{Benchmarking DOR regression models with Mereu2020 datasets}
+For benchmarking DOR regression models (namely LM, Poisson regression model, and NB regression model), we 
+used Mereu2020 dataset families so that we can evaluate the performance of those models when the data were 
+acquired in various sequencing protocols.
+
+\subsubsection*{
+  The preimage and general scRNA-seq data transformation
+}
+Let $^\forall A,B,C$ be sets such that $C\subset B$, and let $f:A\rightarrow B$ be a map. 
+The preimage of $C$ under $f$ (denoted as $f^{-1}[C]$) is defined as follows:
+\begin{equation}\label{preimage}
+  f^{-1}[C]:=\{a\;|\;a\in A\;s.t.\;f(a)\in C\}.
+  \stepcounter{equation} \tag{S-\theequation}
+\end{equation}
+Therefore, a function $\psi: \mathbb{N}\rightarrow\mathbb{R}$ such that $\psi^{-1}[\{0\}]=\{0\}$ returns zero 
+if and only if the input value is zero. This property is essential for $Coverage_{[x]}$ to identify non-zero values.
+
+Let $\psi_R:\mathbb{N}\rightarrow \mathbb{Q}$ as the RPM transformation from the raw counts, and let $\psi_L:\mathbb{Q}\rightarrow \mathbb{R}$ be the transformation 
+from RPM values to $\log_k(RPM+1)$ for all $k>0$. It is trivial that $\psi_R^{-1}[\{0\}]=\{0\}$ and $\psi_L^{-1}[\{0\}]=\{0\}$ hold.
+Accordingly, the conversion from raw counts to $\log_k(RPM+1)$ values are $\psi_L\circ\psi_R$, and the following equation holds:
+\begin{equation}\label{raw2logrpm}
+  (\psi_L\circ\psi_R)^{-1}[\{0\}]=\psi_R^{-1}[\psi_L^{-1}[\{0\}]]=\psi_R^{-1}[\{0\}]=\{0\}.
   \stepcounter{equation} \tag{S-\theequation}
 \end{equation}
 
@@ -181,6 +210,40 @@ fitting line as $DOR\sim -2u + 2$. Consequently, the final form of the fitting c
     \textbf{A-I}: The top 30 GO terms for cluster 0$\sim$8 respectively
   }
   \label{fig_s5}
+\end{figure}
+\begin{figure}[htb]
+  \centering
+  \includegraphics[scale=0.7]{./figs/exported/mereu2020.png}
+  \caption{Mereu2020 datasets}
+  \legend{
+    \textbf{A}: A scatter plot regarding the sample sizes and the total reads of the superfamilies in Mereu2020.
+    \textbf{B}: Coverages in the superfamilies in Mereu2020. The dots of the strip plots refer the coverage values of genes in each dataset.
+    \textbf{C}: Numbers of UMIs (nUMIs) in Mereu2020. As SmartSeq2 is not UMI-based, data were not available.
+    \textbf{D}: Total reads per sample in Mereu2020 datasets.
+  }
+  \label{fig_s6}
+\end{figure}
+\begin{figure}[htb]
+  \centering
+  \includegraphics[scale=0.7]{./figs/exported/mereu2020_lm.png}
+  \caption{Regression models of DOR in Mereu2020 datasets}
+  \legend{
+    \textbf{A-O}: A scatter plot regarding the sample sizes and the total reads of the superfamilies in Mereu2020.
+  }
+  \label{fig_s7}
+\end{figure}
+\begin{figure}[htb]
+  \centering
+  \includegraphics[scale=0.7]{./figs/exported/mereu2020_metrics.png}
+  \caption{Performance metrices for regression models of DOR in Mereu2020 datasets}
+  \legend{
+    \textbf{A}: The coefficients of determination ($R^2$) of logistic-transformed mean expression values to the linear calibration curve of DOR.
+    \textbf{B}: Performance comparison of LM, Poisson, and NB with MSE values.
+    \textbf{C}: Performance comparison of LM, Poisson, and NB with MAE values.
+    \textbf{D}: Performance comparison of the inverse predictions of LM, Poisson, and NB with MAE values.
+    \textbf{E}: Performance comparison of the inverse predictions of LM, Poisson, and NB with MaxAE values.
+  }
+  \label{fig_s8}
 \end{figure}
 
 \end{document}

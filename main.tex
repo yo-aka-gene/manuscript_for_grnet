@@ -14,8 +14,8 @@
   A graph-based practice of evaluating collective identities of cell clusters
 }
 \author[1,2]{Yuji Okano}
-\author[2]{Yoshitaka Kase}
-\author[2]{Hideyuki Okano}
+\author[2,3]{Yoshitaka Kase}
+\author[2,3]{Hideyuki Okano}
 \affil[1]{
   Department of Extended Intelligence for Medicine, 
   The Ishii-Ishibashi Laboratory, 
@@ -25,6 +25,9 @@
   Division of CNS Regeneration and Drug Discovery,
   International Center for Brain Science, 
   Fujita Health University
+}
+\affil[3]{
+  Keio University Regenerative Medicine Research Center
 }
 \date{\today}
 
@@ -53,6 +56,11 @@
 \DeclareAcronym{DOR}{short = DOR, long  = dropout rate}
 \DeclareAcronym{LM}{short = LM, long  = logistic model}
 \DeclareAcronym{NB}{short = NB, long  = negative binomial}
+\DeclareAcronym{MSE}{short = MSE, long  = mean squared error}
+\DeclareAcronym{MAE}{short = MAE, long  = mean absolute error}
+\DeclareAcronym{MaxAE}{short = MaxAE, long  = maximum absolute error}
+\DeclareAcronym{UMI}{short = UMI, long = unique molecular identifier}
+
 
 \DeclareCaptionLabelFormat{mainfigs}{\textbf{Figure #2}}
 \captionsetup[figure]{labelformat=mainfigs}
@@ -85,7 +93,7 @@ cell clusters, we defined novel terms, cell class and eigen-cascades, and step-b
 structures. Eigen-cascades refer to a set of marker genes and pairs of genes that are statistically dependent (i.e., 
 isomorphic to the direct sum of the direct sums of the vertex set and the edge set of a GRN). A cell class refers to 
 a cell cluster characterized with the corresponding eigen-cascades. Note that the nuances of cell clusters and cell 
-classes are slightly different even though we might use those terms interchangeably in this article (See Appendix 
+classes are slightly different even though we might use those terms interchangeably in this article (See Appendices 
 for more descriptions). When two cell classes $^\forall[x], [y]$ are represented by the GRNs regarding a set of genes $G$, and 
 the two GRNs (eigen-cascades) respectively denoted as $C_{[x]}(G)$ and $C_{[y]}(G)$, a bivariate function $d^*$ that maps a 
 pair of cell classes to real numbers are defined as follows\cite{okano2023set}:
@@ -124,7 +132,7 @@ semi-automatically scoops DEGs. Regarding the network algorithms, we mentioned t
 options as well. In our previous paper, we implemented our codes using the numerical (i.e., correlation-based) PC 
 algorithms provided in Pgmpy\cite{pgmpy}, a python package for probablistic graphical models. Another variation of the PC 
 algorithm based on the chi-square test suitable for categorical data is also a realistic option if when the expression 
-values can be binar ized in some ways. We also mentioned that the \ac{MMHC} algorithm, which 
+values can be binarized in some ways. We also mentioned that the \ac{MMHC} algorithm, which 
 combines constraint-based and scoring-based methods\cite{tsamardinos2006max}, is one of promissing alternatives of the PC algorithm.
 
 \begin{figure}[htb]
@@ -170,7 +178,7 @@ Although we have mentioned that there are various possibile options for the mark
 
 Supervison by the experimenter struggles with completeness and arbitrariness even though we cite some reliable 
 sources (e.g., review papers, or GO terms). For example, in the last paper, we selected SLC1A2, VIM, and AQP4 
-as glial markers referring a review article\cite{zhang2015molecular}. Those glial markers are subcrribed to various GO terms in total, and there 
+as glial markers referring a review article\cite{zhang2015molecular}. Those glial markers are subcribed to various GO terms in total, and there 
 are other genes than the three tagged with those terms (\figurename{ 2A}). This example highlights the incompleteness of 
 the three genes to represent all aspects of glia. Furthermore, the many-to-many correspondence of genes and GO 
 terms would make it a significant challenge to draw a clear and reasonable line between the genes adopted as 
@@ -199,7 +207,7 @@ even within the top 10 features of importance. Note that GRNs require pairwise c
 modelers should avoid using an excessive number of genes for computational efficiency. Other than the feature 
 importance scores, the \ac{SHAP} scores can be an alternative metric to visualize the correspondence between the features 
 and the classifications\cite{shap}. Even though SHAP scores provided more intuitive and precise explanations (\figurename{ 2D and S3A-I}), 
-it is still a challenge to introduce an objective thresholds for gene selection beacuse the distributions 
+it is still a challenge to introduce an objective thresholds for gene selection because the distributions 
 of SHAP scores drastically vary across different classes. Consequently, the ML-based approach is not the most 
 effective way to select marker genes to represent the cell classes because it also requires the modeler's subjectivity as well as reference based supervision 
 despite it is more time-consuming. ML-based approaches might work well if the character of the samples are 
@@ -238,7 +246,7 @@ The statistical independence of two events $A$ and $B$ is defined as a situation
 where $P(\cdot)$ is the probability of an event. On the other hand, the correlation coefficient $Corr(X, Y)$ of stochastic variables 
 $X$ and $Y$ is defined as follows:
 \begin{equation}\label{corr}
-  Corr(X, Y):=\frac{Cov(X, Y)}{\sqrt{Var[X]Var[Y]}}=\frac{E[(X-E[X])(Y-E[Y])]}{\sqrt{Var[X]Var[Y]}},\quad \text{if}\; Var[X]Var[Y] > 0,
+  Corr(X, Y):=\frac{Cov(X, Y)}{\sqrt{Var[X]Var[Y]}},\quad \text{if}\; Var[X]Var[Y] > 0,
 \end{equation}
 where $E[\cdot]$ is the expected value, $Var[\cdot]$ is the variance, and $Cov(\cdot, \cdot)$ is the covariance. Independent variables 
 exhibit a correlation coefficient of zero, the converse is false (e.g., when $X\sim U(-1, 1)$, where $U(-1, 1)$ refers to the uniform 
@@ -339,21 +347,29 @@ PF4 and GNG11, were raraly expressed in the cluster 5 (\figurename{ 2F}), accord
 the identification algorithm showed that the majority of the cluster 5 were classified double-negative (\figurename{ 4A}).
 
 Although we adopt the standpoint of dropout as a practical feature, some experts have opposed the idea of exploiting dropouts and have 
-developped dropout imputation algorithms. To clarify our point, here we examine how dropouts explain the data features.
+developped dropout imputation algorithms\cite{kim2020demystifying}. To clarify our point, here we examine how dropouts explain the data features.
 
 First, we validated if the \ac{DOR}, the proportion of zeros in the count data of a gene, associated 
 with the mean values ($log_2(RPM+1)$) in the PBMC3k data. Although the DOR values and the mean values 
 exhibited a non-linear correspondence, we could successfully establish a linear formulation with a simple logistic 
-transformation on the mean expression values (See Appendix for details). The logistic-transformed mean values 
+transformation on the mean expression values (See Appendices for details). The logistic-transformed mean values 
 fitted well to the linear calibration curve scoring 0.993 in the coefficient of determination ($R^2$), and we named the 
 inverse-transformed curve aligned with the data distribution in the scatter plot of the mean values and the DOR 
-(\figurename{ 4B}). We named the calibration curve the \ac{LM}. To benchmark the performance of the LM, 
-we made a Poisson regression model and a \ac{NB} regression model, as those regression models are 
-regular choices for modeling dropout events\cite{choi2020bayesian}.
-
-
-using the PBMC3k dataset and new group of datasets obtained by Mereu and the colleagues\cite{mereu2020benchmarking} (hereby 
-we called the group of datasets Mereu2020).
+(\figurename{ 4B}). Hence, we could demonstrate that the DOR values are closely related to the mean expression values, 
+which are the most frequently-used summary statistics. As the DOR values are comparable across different datasets, 
+while the mean expression values are unsuitable for trans-dataset comparison, it was suggested that the potential 
+of the calibration curve of DOR and the mean expression to work effectively in cell class comparison using multiple 
+data source by interchangeably translating the comparable feature and the uncomparable but meaningful 
+one. To benchmark the performance of the model, we coined the name \ac{LM}, and compared with 
+a Poisson regression model and a \ac{NB} regression model (\figurename{ 4C}), which are well-known models 
+of dropout events\cite{choi2020bayesian}. The \ac{MSE} scores of those models indicated the LM best fitted to PBMC3k dataset compared 
+to the other competitors (\figurename{ 4D}), and its \ac{MAE} (i.e., expected prediction error) in DOR 
+value turned out to be less than 0.005 (\figurename{ 4E}). To measure the errors produced when turning DOR values back 
+to mean expressions, we made the inverse prediction models of those three models (See Appendices for details), and 
+tested their performance. As described in Appendices, the all inverse prediction models have a fundamental issue 
+in predicting mean expression values for zero DOR, we excluded those data from performance evaluation and we visualized \ac{MaxAE} values in addition to MAE values so that we could quantify the 
+prediction performance for data of low DOR. LM exhibited lowest MAE scoring less than 0.1 errors in mean 
+expression values on average (\figurename{ 4F}), and it scored the best in MaxAE as well (\figurename{ 4G}).
 
 \begin{figure}[htb]
   \centering
@@ -369,9 +385,22 @@ we called the group of datasets Mereu2020).
   \label{logistic model}
 \end{figure}
 
-Mereu2020 includes 15 superfamilies where the same sample components were measured across different protocols 
-(e.g., different platforms, or different sequencing depth) in order to benchmark scRNA-seq protocols\cite{mereu2020benchmarking}.
-
+Followingly, we tested if there is correspondence between DOR and some data attributes unique to individual 
+datasets using a group of datasets obtained by Mereu and the colleagues\cite{mereu2020benchmarking} (hereby we called the group of 
+datasets Mereu2020). Mereu2020 includes 15 superfamilies where the same sample components were measured 
+across different protocols (e.g., different platforms, or different sequencing depth) in order to benchmark scRNA-seq 
+protocols\cite{mereu2020benchmarking}. Datasets included in Mereu2020 exhibited wide range of variations in sample sizes and total reads 
+(\figurename{ S6A}). When we visualized coverages of gene expressions (in other words, proportions of non-zero values 
+which is equivalent to $1-DOR$), numbers of \ac{UMI}, and total reads per sample, datasets 
+with high coverages were enriched in UMI and read counts (\figurename{ S6B-D}). Therefore, it was suggested that DOR 
+reflected those metadata attributes, which is also discussed in previous studies\cite{qiu2020embracing}. Futhermore, we tested if we could 
+reproduce LMs explaining the intertwinement between DOR and mean expressions well in Mereu2020 datasets 
+(\figurename{ S7A-O}). As well as we have shown with PBMC3k dataset, logistic-transformed mean expression values 
+of all datasets fitted well to the linear calibration curves with high coefficients of determination (\figurename{ S8A}). We also 
+benchmarked their performance comparing with Poisson and NB regression models (\figurename{ S7A-O, S8B-E}). 
+As there provided detailed descriptions in Appendices, LM showed its ability to work as a calibration curve of DOR 
+and mean expression values in a wide range of datasets. Consequently, it was suggested that DOR reflects metadata features 
+and per-sample characteristics.
 
 \subsection*{Weighted evaluation function}
 Therefore, we defined the coverage (we define it as the presense of the 
@@ -391,7 +420,7 @@ of cell class $[x]$ as follows:
 Note that $Coverage_{[x]}$ relies on $q$ only for identifying zeros in raw counts, therefore, 
 any kind of values converted from raw counts by a transformation $\psi: \mathbb{N}\rightarrow\mathbb{R}$ 
 such that $\psi^{-1}[\{0\}]=\{0\}$ can be used in lieu of $q(g, x)$. For instance, \ac{RPM} values 
-and $\log_2(RPM+1)$ are accepted (see Appendix for more detailed explanations).
+and $\log_2(RPM+1)$ are accepted (see Appendices for more detailed explanations).
 
 \begin{equation}\label{HQPM}
   d^*([x], [y]) := 1 - \frac{|C_{[x]}(G)\cap C_{[y]}(G)|}{|C_{[x]}(G)|}
