@@ -53,16 +53,13 @@ asymmetrical notations for edge sets to build up our theory from causal networks
 the restriction by replacing the causalities with the statistical dependencies. In this section, 
 we adopted the same style for consistency even though the statistical dependency of two variables is symmetrical.
 
-We also introduced a notation $\{g_1, g_2\}_{g_1}$ where $^\forall g_1,g_2\in G$ such 
-that $g_1$ is dependent on $g_2$, representing an indexed 
-set with the index $g_1\in\{g_1, g_2\}$. We named such index sets cascades. The inclusion of $g_1$ 
-being dependent on itself leads to the expression $\{g_1, g_1\}_{g_1}$; however, 
-mathematical set rules simplify this to $\{g_1\}_{g_1}$. Notably, these singleton 
-sets are also considered valid representations of cascades. The eigen-cascades of a cell class $[x]$ are the 
-cascades that can be inferred from $[x]$, which is the cell class that a sample $x$ belongs. 
-As all cascades are either singletons or sets of two elements, the set of the 
-eigen-cascades $C_{[x]}(G)$ of $[x]$ equals to the union of $V_{[x]}(G)$ and 
-$E_{[x]}(G)$ defined as follows:
+We also introduced a notation $\{g_1, g_2\}_{g_1}$ where $^\forall g_1,g_2\in G$ such that $g_1$ is dependent on $g_2$, representing an 
+indexed set with the index $g_1\in\{g_1, g_2\}$ (note that the symmetry of statistical dependency induces symmetry 
+$\{g_1, g_2\}_{g_1}=\{g_1, g_2\}_{g_2}$). We named such index sets cascades. The inclusion of $g_1$ being dependent on itself leads to 
+the expression $\{g_1, g_1\}_{g_1}$; however, mathematical set rules simplify this to $\{g_1\}_{g_1}$. Notably, these singleton sets are 
+also considered valid representations of cascades. The eigen-cascades of a cell class $[x]$ are the cascades that can be 
+inferred from $[x]$, which is the cell class that a sample $x$ belongs. As all cascades are either singletons or sets of two 
+elements, the set of the eigen-cascades $C_{[x]}(G)$ of $[x]$ equals to the union of $V_{[x]}(G)$ and $E_{[x]}(G)$ defined as follows:
 \begin{equation}\label{Vx}
   V_{[x]}(G):=\{c|c\in C_{[x]}(G)\; s.t.\; |c|=1\}=\{\{g\}_g|g\in G\}
   \stepcounter{equation} \tag{S-\theequation}
@@ -136,7 +133,22 @@ that all models perform exactly as poorly as the others by generating infinity p
 \subsubsection*{Benchmarking DOR regression models with Mereu2020 datasets}
 For benchmarking DOR regression models (namely LM, Poisson regression model, and NB regression model), we 
 used Mereu2020 dataset families so that we can evaluate the performance of those models when the data were 
-acquired in various sequencing protocols.
+acquired in various sequencing protocols. Likewise we did on PBMC3k dataset, we made LMs, Poisson regression 
+models, and NB regression models for respective datasets (\figurename{ S7A-O}). Then we measured MSE (\figurename{ S8B}), 
+MAE (\figurename{ S8C}), MAE of the inverse-prediction models (\figurename{ S8D}), and MaxAE of the inverse-prediction 
+models (\figurename{ S8E}) to evaluate their performance.
+
+Unlike the result from PBMC3k dataset, LM underperformed Possion and NB regression models in most cases 
+(except for Chromium V2 (sn), Chromium V3, C1HT-medium, and C1HT-small) in terms of MSE (\figurename{ S8B}). 
+Similar results were reproduced in terms of MAE even though all models scored quite small MAE values (\figurename{ S8C}).
+Although LM slightly underperformed the two conventional regression models in explaining the relationship 
+between mean expressions and DOR values in general cases, LM showed stable performance in the inverse-prediction 
+tasks scoring less than 0.1 MAE in all cases (\figurename{ S8D}), and even outperformed Poisson and NB regression models 
+in terms of MaxAE (\figurename{ S8E}) suggesting that LM performed better than the other two models at low DOR 
+values. Those results indicated that LM models work as calibration curves that can transform DOR and mean 
+expression values interchangeably in wide ranges of those input values, while the conventional regression models 
+have more weights on domains where samples densely distribute (regularly high-DOR and low-mean-expression 
+areas) to outperform LM in terms of MSE, MAE, and MAE of the inverse prediction in general.
 
 \subsubsection*{
   The preimage and general scRNA-seq data transformation
@@ -157,6 +169,24 @@ Accordingly, the conversion from raw counts to $\log_k(RPM+1)$ values are $\psi_
   (\psi_L\circ\psi_R)^{-1}[\{0\}]=\psi_R^{-1}[\psi_L^{-1}[\{0\}]]=\psi_R^{-1}[\{0\}]=\{0\}.
   \stepcounter{equation} \tag{S-\theequation}
 \end{equation}
+
+\subsubsection*{
+  An example where WHQPM is undefined
+}
+Taking look at the definition of $Whqpm$, it is clear that the formula holds iff $|E_{[x]}(G)|+\sum_{g\in G}Coverage_{[x]}(g)\neq 0$. 
+Given that both $|E_{[x]}(G)|$ and $\sum_{g\in G}Coverage_{[x]}(g)$ are non-negative, $Whqpm$ decomes undifined when those two 
+terms are both zero. Such condition is readily satisfied when the GRN of the subjective cell class $[x]$ is characterized 
+with genes completely absent in $[x]$ exhibiting zero coverages (i.e., DOR values of those genes are all 1). In such 
+case, not only $\sum_{g\in G}Coverage_{[x]}(g)=0$ but also $|E_{[x]}(G)|$ becomes 0 (otherwise $^\forall e\in|E_{[x]}(G)$ is undefined). The status 
+of $|E_{[x]}(G)|$ varies depending on the choice of GRN formation algorithm, in other words, computational methods to 
+assign edges among vertexes. While the correlation-based method and the chi-squared test-based method coupled 
+with the dropout-based binarization are not applicable for the case where the mean expression values are all zero 
+and all samples in $[x]$ are negative for all genes. Alternatively, Fisher's exact test is an available option for the 
+algorithm to compute the edges, but the null hypotheses fail to be rejected in those setting resulting in $|E_{[x]}(G)|=0$.
+
+Consequently, $Whqpm$ is undefined when the GRN of $[x]$ is formed with genes such that $\sum_{g\in G}Coverage_{[x]}(g)=0$. 
+By design, WHQPM prevents ill-defined characterization of the similarity between two cell classes by staying 
+undefined when the subjective cell class is represented exclusively with uncharacteristic genes.
 
 \newpage
 \subsection*{Supplemental Figures}

@@ -19,15 +19,18 @@
 \affil[1]{
   Department of Extended Intelligence for Medicine, 
   The Ishii-Ishibashi Laboratory, 
-  Keio University School of Medicine
+  Keio University School of Medicine;
+  35 Shinanomachi, Shinjuku-Ku, Tokyo 160-8582, Japan
 }
 \affil[2]{
   Division of CNS Regeneration and Drug Discovery,
   International Center for Brain Science, 
-  Fujita Health University
+  Fujita Health University; 
+  1-98 Dengakugakubo, Kutsukake-Cho, Toyoake, Aichi 470-1192, Japan
 }
 \affil[3]{
-  Keio University Regenerative Medicine Research Center
+  Keio University Regenerative Medicine Research Center;
+  3-25-10 Tonomachi, Kawasaki-Ku, Kawasaki, Kanagawa 210-0821, Japan
 }
 \date{\today}
 
@@ -60,6 +63,7 @@
 \DeclareAcronym{MAE}{short = MAE, long  = mean absolute error}
 \DeclareAcronym{MaxAE}{short = MaxAE, long  = maximum absolute error}
 \DeclareAcronym{UMI}{short = UMI, long = unique molecular identifier}
+\DeclareAcronym{WHQPM}{short = WHQPM, long = weighted Hamming quasi-pseudo-metric}
 
 
 \DeclareCaptionLabelFormat{mainfigs}{\textbf{Figure #2}}
@@ -340,11 +344,12 @@ our new proposal can be applied to similar cases.
 \subsection*{Dropout-based binarization}
 As we discussed above, the dropout can be considered as an example for the pitfalls of the corrlation-based algorithm.
 On the otherhand, the dropouts are recently studied well to be turned out that the zero inflation are closely related 
-to data attributes such as cell types\cite{qiu2020embracing}. Inheriting from these ideas, we considered that the dropouts can be a good 
-indicator of enriched gene expressions. In details, the binarization algorithm of our proposal determines non-zero 
-expression values as positive and zeros as negative. For example, the top two DEGs of the cluster 8 in PBMC3k, 
-PF4 and GNG11, were raraly expressed in the cluster 5 (\figurename{ 2F}), accordingly, the $2\times 2$ contingency table based on 
-the identification algorithm showed that the majority of the cluster 5 were classified double-negative (\figurename{ 4A}).
+to data attributes such as cell types\cite{qiu2020embracing, zappia2017splatter}. Inheriting from these ideas, we considered that the dropouts can be 
+a good indicator of enriched gene expressions. In details, the binarization algorithm of our proposal determines 
+non-zero expression values as positive and zeros as negative. For example, the top two DEGs of the cluster 8 in 
+PBMC3k, PF4 and GNG11, were raraly expressed in the cluster 5 (\figurename{ 2F}), accordingly, the $2\times 2$ contingency 
+table based on the identification algorithm showed that the majority of the cluster 5 were classified double-negative 
+(\figurename{ 4A}).
 
 Although we adopt the standpoint of dropout as a practical feature, some experts have opposed the idea of exploiting dropouts and have 
 developped dropout imputation algorithms\cite{kim2020demystifying}. To clarify our point, here we examine how dropouts explain the data features.
@@ -381,6 +386,10 @@ expression values on average (\figurename{ 4F}), and it scored the best in MaxAE
     \textbf{B}: The logistic model of DOR. 
     \textbf{C}: The performance comparison with the Poisson regression model (Poisson) and 
     the negative-binomial regression model (NB).
+    \textbf{D}: Performance comparison of LM, Poisson, and NB with MSE values.
+    \textbf{E}: Performance comparison of LM, Poisson, and NB with MAE values.
+    \textbf{F}: Performance comparison of the inverse predictions of LM, Poisson, and NB with MAE values.
+    \textbf{G}: Performance comparison of the inverse predictions of LM, Poisson, and NB with MaxAE values.
   }
   \label{logistic model}
 \end{figure}
@@ -388,39 +397,53 @@ expression values on average (\figurename{ 4F}), and it scored the best in MaxAE
 Followingly, we tested if there is correspondence between DOR and some data attributes unique to individual 
 datasets using a group of datasets obtained by Mereu and the colleagues\cite{mereu2020benchmarking} (hereby we called the group of 
 datasets Mereu2020). Mereu2020 includes 15 superfamilies where the same sample components were measured 
-across different protocols (e.g., different platforms, or different sequencing depth) in order to benchmark scRNA-seq 
-protocols\cite{mereu2020benchmarking}. Datasets included in Mereu2020 exhibited wide range of variations in sample sizes and total reads 
-(\figurename{ S6A}). When we visualized coverages of gene expressions (in other words, proportions of non-zero values 
-which is equivalent to $1-DOR$), numbers of \ac{UMI}, and total reads per sample, datasets 
-with high coverages were enriched in UMI and read counts (\figurename{ S6B-D}). Therefore, it was suggested that DOR 
-reflected those metadata attributes, which is also discussed in previous studies\cite{qiu2020embracing}. Futhermore, we tested if we could 
-reproduce LMs explaining the intertwinement between DOR and mean expressions well in Mereu2020 datasets 
-(\figurename{ S7A-O}). As well as we have shown with PBMC3k dataset, logistic-transformed mean expression values 
-of all datasets fitted well to the linear calibration curves with high coefficients of determination (\figurename{ S8A}). We also 
-benchmarked their performance comparing with Poisson and NB regression models (\figurename{ S7A-O, S8B-E}). 
-As there provided detailed descriptions in Appendices, LM showed its ability to work as a calibration curve of DOR 
-and mean expression values in a wide range of datasets. Consequently, it was suggested that DOR reflects metadata features 
-and per-sample characteristics.
+across different protocols (e.g., different platforms or different sequencing depth) in order to benchmark scRNA-seq 
+protocols\cite{mereu2020benchmarking}, including Chromium V2 (deep), Chromium V2 (shallow), Chromium V2 (sn), Chromium V3, C1HT-medium, 
+C1HT-small, CEL-seq2, Drop-seq, ICELL8, MARS-Seq, Quartz-Seq2, gmcSCRB-seq, ddSEQ, inDrop, 
+and Smart-Seq2 (for detailed descriptions, please refer to the original article\cite{mereu2020benchmarking} and URLs to the corresponding 
+webpages on Gene Expression Omnibus we respectively provided in Methods). Datasets included in Mereu2020 
+exhibited wide range of variations in sample sizes and total reads (\figurename{ S6A}). When we visualized coverages 
+of gene expressions (in other words, proportions of non-zero values which is equivalent to $1-DOR$), numbers 
+of \ac{UMI}, and total reads per sample, datasets with high coverages were enriched in 
+UMI and read counts (\figurename{ S6B-D}). Therefore, it was suggested that DOR reflected those metadata attributes, 
+which is also discussed in previous studies\cite{qiu2020embracing, zappia2017splatter}. Futhermore, we tested if we could reproduce LMs explaining the 
+intertwinement between DOR and mean expressions well in Mereu2020 datasets (\figurename{ S7A-O}). As well as we have 
+shown with PBMC3k dataset, logistic-transformed mean expression values of all datasets fitted well to the linear 
+calibration curves with high coefficients of determination (\figurename{ S8A}). We also benchmarked their performance 
+comparing with Poisson and NB regression models (\figurename{ S7A-O, S8B-E}). As there provided detailed descriptions 
+in Appendices, LM showed its ability to work as a calibration curve of DOR and mean expression values in a wide 
+range of datasets. Consequently, it was suggested that DOR reflects metadata features and per-gene characteristics.
+
+Given those examples we have so far demonstrated, we concluded that DOR can be a useful statistic that reflects 
+collective features of scRNA-seq data including mean expression values and other metadata including information 
+about sequencing depth.
 
 \subsection*{Weighted evaluation function}
-Therefore, we defined the coverage (we define it as the presense of the 
-non-zero gene expression) and
-
-With a map $q: \Gamma\times X\rightarrow \mathbb{N}$ which returns a raw gene counts
-of gene $^\forall g\in\Gamma$ for sample $^\forall x\in X$ where $\Gamma$ is the whole set of genes 
-and $X$ is the whole set of samples, here we introduce the coverage function $Coverage_{[x]}: \Gamma\rightarrow\mathbb{Q}$ 
-of cell class $[x]$ as follows:
+As we stated above, the GRN formation dismisses actual mean expression values of a cell cluster by encoding only 
+the co-occurence (or co-absence) of gene expressions. To fix this issue, we introduced a new metric which can play a 
+role as an evaluation function of GRNs in lieu of $d^*$, so that we can assign weights to the abundance of 
+gene expressions on the similarity of graph structures. To quantify the amount of gene expressions in a manner 
+comparable across different datasets, we applied the coverage (the presense of the non-zero gene expressions which 
+is equivalent to $1-DOR$) expecting DOR to indirectly reflect the mean expressions of the marker genes forming 
+the edges of the GRNs. With a map $q: \Gamma\times X\rightarrow \mathbb{N}$ which returns a raw gene counts of gene $^\forall g\in\Gamma$ for sample 
+$^\forall x\in X$ where $\Gamma$ is the whole set of genes and $X$ is the whole set of samples, we formulated the coverage function 
+$Coverage_{[x]}: \Gamma\rightarrow\mathbb{Q}$ of cell class $[x]$ (which indicates the coverage value of the given gene $g$ in the designated cell 
+class $[x]$) as follows:
 \begin{equation}\label{coverage}
   Coverage_{[x]}(g):=\frac{
     |\{x\;|\;x\in[x]\;s.t.\;q(g,x)\neq 0\}|
   }{
     |[x]|
-  }
+  }.
 \end{equation}
 Note that $Coverage_{[x]}$ relies on $q$ only for identifying zeros in raw counts, therefore, 
 any kind of values converted from raw counts by a transformation $\psi: \mathbb{N}\rightarrow\mathbb{R}$ 
-such that $\psi^{-1}[\{0\}]=\{0\}$ can be used in lieu of $q(g, x)$. For instance, \ac{RPM} values 
+such that $\psi^{-1}[\{0\}]=\{0\}$ can be used instead of $q(g, x)$. For instance, \ac{RPM} values 
 and $\log_2(RPM+1)$ are accepted (see Appendices for more detailed explanations).
+
+Given that Eq.\eqref{d_asterisk} can also be denoted as Eq.\eqref{HQPM}, we introduced our new evaluation function, the \ac{WHQPM} 
+$Whqpm$, by multiplying the cardinality of the gene set $|G|$ respectively 
+with the coverage values resulting in Eq.\eqref{WHQPM}:
 
 \begin{equation}\label{HQPM}
   d^*([x], [y]) := 1 - \frac{|C_{[x]}(G)\cap C_{[y]}(G)|}{|C_{[x]}(G)|}
@@ -437,7 +460,9 @@ and $\log_2(RPM+1)$ are accepted (see Appendices for more detailed explanations)
     |E_{[x]}(G)|+\sum_{g\in G}Coverage_{[x]}(g)
   }.
 \end{equation}
-Weighted Hamming quasi-pseudo-metric
+Note that \ac{WHQPM} cannot be defined if $Coverage_{[x]}(g)=0$ for all $^\forall g\in G$, and this property of WHQPM prohibits 
+a cell class get its similarity to other cell classes characterized with totally irrelevant genes exhibiting zero expressions 
+(See also Appendices for detailed explanations).
 
 \subsection*{Benchmarking}
 To highlight the efficiency of the proposed methods, 
@@ -540,8 +565,19 @@ Online documentation for GRNet is also provived (\url{https://grnet.readthedocs.
 
 
 \section*{Author contributions}
-YO designed the project, implemented the algorithms, excecuted the analyses, and wrote the manuscript. YK 
-contributed as the senior author, and edited the manuscript. HO edited the manuscript, and supervised the project.
+\begin{description}
+  \item[Conceptualization] YO
+  \item[Methodology] YO
+  \item[Impletemtation] YO
+  \item[Investigation] YO
+  \item[Visualization] YO
+  \item[Senior author] YK
+  \item[Funding acquisition] YK, HO
+  \item[Project administration] YO, YK, HO
+  \item[Supervision] HO
+  \item[Original draft] YO
+  \item[Editing] YK, HO
+\end{description}
 
 \section*{Acknowledgements}
 We thank hogehoge for thorough support.
