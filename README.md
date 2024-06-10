@@ -6,6 +6,7 @@ manuscript for GRNet project
 ## TODO
 - Benchmarking with  M1C10X and hFB sample
 - TDD
+- implement functions suitable for AnnData
 
 ## DS list
 - M1C10X: [https://portal.brain-map.org/atlases-and-data/rnaseq/human-m1-10x](https://portal.brain-map.org/atlases-and-data/rnaseq/human-m1-10x)
