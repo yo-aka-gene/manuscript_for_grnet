@@ -64,6 +64,7 @@
 \DeclareAcronym{MaxAE}{short = MaxAE, long  = maximum absolute error}
 \DeclareAcronym{UMI}{short = UMI, long = unique molecular identifier}
 \DeclareAcronym{WHQPM}{short = WHQPM, long = weighted Hamming quasi-pseudo-metric}
+\DeclareAcronym{OT}{short = OT, long = optimal transport}
 
 
 \DeclareCaptionLabelFormat{mainfigs}{\textbf{Figure #2}}
@@ -76,7 +77,21 @@
 \maketitle
 
 \section*{Abstract}
-Random sentences
+The rise of \ac{scRNA-seq} and computational algorithms have pushed forward today's 
+biomedical science by visualizing multifaceted and diverse nature of cells in single-cell levels. In contrast, due to 
+those technical advancements, cell clusters have played a pivotal role as instantiations of certain universal entities 
+such as cell types and cell states, even though these clusters can be dataset-specific and method-dependent. In 
+order to give them a structure comparable across different datasets or different compositions, in our previous paper, 
+we introduced a graph-based representation of collections of cells that reflects statistical dependencies of their 
+characteristic genes.
+
+Despite we paid attention to theoretical insights in the previous work, refinement on practical implemtntation 
+was left insufficient. Hence, in this article, we proposed a new practice to define and evaluate cellular identities 
+with graph based on our theory. First we provided a concise summary for our theory and workflow we previously 
+introduced. Then, we developped solutions that can point-by-point access issues after raising them to explain why they 
+needed to be fixed. Leveraing alternative formats of cellular features such as \ac{GO} terms and 
+dropouts, we upgraded our framework by improving utility. We also provided supplemental techniques to emphasize 
+our standpoint or reinforce the versatility of our method.
 
 \section*{Introduction}
 It has been more than 10 years since the birth of \ac{scRNA-seq}\cite{tang2009mrna}, and the technology now 
@@ -347,9 +362,9 @@ On the otherhand, the dropouts are recently studied well to be turned out that t
 to data attributes such as cell types\cite{qiu2020embracing, zappia2017splatter}. Inheriting from these ideas, we considered that the dropouts can be 
 a good indicator of enriched gene expressions. In details, the binarization algorithm of our proposal determines 
 non-zero expression values as positive and zeros as negative. For example, the top two DEGs of the cluster 8 in 
-PBMC3k, PF4 and GNG11, were raraly expressed in the cluster 5 (\figurename{ 2F}), accordingly, the $2\times 2$ contingency 
-table based on the identification algorithm showed that the majority of the cluster 5 were classified double-negative 
-(\figurename{ 4A}).
+PBMC3k, PF4 and GNG11 (both are megakaryocyte markers\cite{puhm2023diversity}), were raraly expressed in the cluster 5 (\figurename{ 2F}), 
+accordingly, the $2\times 2$ contingency table based on the identification algorithm showed that the majority of the 
+cluster 5 were classified double-negative (\figurename{ 4A}).
 
 Although we adopt the standpoint of dropout as a practical feature, some experts have opposed the idea of exploiting dropouts and have 
 developped dropout imputation algorithms\cite{kim2020demystifying}. To clarify our point, here we examine how dropouts explain the data features.
@@ -381,9 +396,9 @@ expression values on average (\figurename{ 4F}), and it scored the best in MaxAE
   \includegraphics[scale=0.8]{./figs/exported/logisticmodel.png}
   \caption{Dropout-based binarization and empirical investigations on DOR}
   \legend{
-    \textbf{A}: A dropout-based $2\times 2$ contingency table of PF4 and GNG11 for the cluster 5 in PBMC3k.
-    The $+$ refers to non-zero expression values and the $-$ to zeros.
-    \textbf{B}: The logistic model of DOR. 
+    \textbf{A}: A dropout-based $2\times 2$ contingency table of PF4 and GNG11 for the cluster 5 in PBMC3k 
+    ($+$: non-zero expression values, $-$: zeros).
+    \textbf{B}: The LM of DOR. 
     \textbf{C}: The performance comparison with the Poisson regression model (Poisson) and 
     the negative-binomial regression model (NB).
     \textbf{D}: Performance comparison of LM, Poisson, and NB with MSE values.
@@ -455,7 +470,7 @@ with the coverage values resulting in Eq.\eqref{WHQPM}:
 \end{equation}
 \begin{equation}\label{WHQPM}
   Whqpm([x], [y]) := 1 - \frac{
-    |E_{[x]}(G)\cap E_{[y]}(G)|+\sum_{g\in G}Coverage_{[x]}(g)
+    |E_{[x]}(G)\cap E_{[y]}(G)|+\sum_{g\in G}Coverage_{[y]}(g)
   }{
     |E_{[x]}(G)|+\sum_{g\in G}Coverage_{[x]}(g)
   }.
@@ -464,11 +479,46 @@ Note that \ac{WHQPM} cannot be defined if $Coverage_{[x]}(g)=0$ for all $^\foral
 a cell class get its similarity to other cell classes characterized with totally irrelevant genes exhibiting zero expressions 
 (See also Appendices for detailed explanations).
 
-\subsection*{Benchmarking}
-To highlight the efficiency of the proposed methods, 
+As WHQPM depends on coverage values, not only biological variations but technical factors including choices 
+of sequencing pipelines as well affect the result. If one considers that differences in DOR are also realistic features 
+of the data, WHQPM is available for comparing cell classes across different datasets. Otherwise, \ac{OT}-based 
+domain adaptation can mitigate the gap if the experimenter prefer to standardize the various effects 
+that have impact on DOR, as we described in \figurename{ S9A-H} and Appendices.
+
+To demonstrate the benefit from the use of WHQPM, first we computed GRNs of the clusters 0 through 8 on 
+their top 5 DEGs using the dropout-based binarization technique and the PC algorithm for categorical data (\figurename{ 5A}), 
+and then calculated $Whqpm$ values to visualize the similarities of the clusters (\figurename{ 5B}). Although the PC algorithm for categorical data inferred the exact same GRNs for different clusters in some cases (e.g., the GRNs of 
+the top 5 DEGs of the cluster 8, namely PPBP, SPARC, SDPR, PF4, and GNG11), $Whqpm$ distinguished the 
+differnces between the cluster 8 and the other clusters as it returned non-zero values except for the cluster 8 itself. 
+As $d^*$ returns zero if the subjective cell class has no edges in its GRN, we could resolve this issue with WHQPM.
+
+
+\begin{figure}[htb]
+  \centering
+  \includegraphics[scale=0.8]{./figs/exported/binarization.png}
+  \caption{Combination of dropout-based bunarization and WHQPM}
+  \legend{
+    \textbf{A}: GRNs of the clusters in PBMC3k generated with dropout-based binarization and PC algorithm for categorical data. GRNs in a row share the same set of genes
+    (DEGs of the subjective clusters) selected for the vertex sets.
+    \textbf{B}: The $Whqpm$ values based on the GRNs of the top 5 DEGs generated after dropout-based binarization.
+  }
+  \label{binarization}
+\end{figure}
+
 
 \section*{Discussion}
-I have no idea.
+In general, scRNA-seq data processing is driven by statistical, geometrical, and information-theoretical approach 
+even though the results from those algorithms are perceived by testing if they can recite the storyline of biology. In 
+other words, detailed aspects of algorithms are less significant if the results make sense in some way. Therefore, 
+heurisiticity is valued rather than theoretical rigor in some context. As scRNA-seq data are acceleratedly 
+accumulated even though they are sensitive to fluctuation of the surrounding conditions, we belive that a framework that 
+can handle scRNA-seq data in a tentative but comparable format would help us land on universal truth yet to be 
+unveiled by balancing context-dependency and generalization.
+
+We designed the GRN-based definition of cellular identities and the metric $d^*$ to quantify the similarity of them 
+in order to meet the need, however, impracticality that we have so far pointed out had remained. Therefore, we 
+proposed a series of solutions hoping for improved functionality. We also launched a python package GRNet 
+(pronounced garnet) to provide a platform for our proposal concepts, which needs further validations in various cases.
 
 \section*{Methods}
 \subsection*{GRNet Impletemtations}
@@ -481,21 +531,27 @@ Jaccard Index of two sets $A, B$ is defined as Eq. \eqref{jaccard}. We expanded 
 definition to pairwise comparisons of multiple elements by forming a matrix 
 where each element is the corresponding Jaccard Index, and we named the matrix \ac{JIM}. For example, the element in 
 $i$-th row and $j$-th column (where $i, j, k\in\mathbb{N}$ and $i\leq k, j\leq k$), $JIM_{i,j}$, can be defined as
-follows when a JIM of sets $X_1, X_2,\cdots, X_k$ are considered:
+follows when a JIM of sets $X_1, X_2,\cdots, X_k$ are introduced:
 \begin{equation}\label{jim}
-  JIM_{i, j} := J(X_i, X_j)
+  JIM_{i, j} := J(X_i, X_j).
 \end{equation}
-Especially for seed markers, sets of subscribed GO terms (let $G_1, \cdots, G_k$)
-and their JIM are calulated in order to set $min_{i,j}(J(G_i, G_j))$ as a threshold of 
-biological correspondence.
 
-$\vdots$
+When a collection of genes $g_1, \cdots, g_k$ collectively explain certain type of cells, and they are tagged with respective 
+sets GO terms $G_1, \cdots, G_k$, we considered $min_{i,j\in\{1\cdots k\}}J(G_i, G_j)$ as a threshold of biological correspondence to the 
+type of cells. For example, let $G_{k+1}, G_{k+2}$ are the sets of GO terms tagged with $g_{k+1}$ and $g_{k+2}$ 
+($g_{k+1}, g_{k+2}\notin \{g_1, \cdots, g_k\}$), new gene $g_{k+1}$ would be important for the type of cells if $min_{i\in\{1\cdots k\}}J(G_i, G_{k+1})$ 
+is less than $min_{i,j\in\{1\cdots k\}}J(G_i, G_j)$, and $g_{k+2}$ would be irresponsible if $min_{i\in\{1\cdots k\}}J(G_i, G_{k+2})$ is greater than 
+$min_{i,j\in\{1\cdots k\}}J(G_i, G_j)$. Under those rules, we implemented to search for important markers from genes tagged 
+with GO terms in $\bigcap_{i\in\{1,\cdots,k\}}G_i$.
 
-For detailed method of implementation, we calculated the JIM of the related GO terms of given seed markers. We used mygene.py\cite{mygene} to query the GO database, and Numpy\cite{numpy} to calculate JIM.
+For detailed method of implementation, we calculated the JIM of the related GO terms of given seed markers. 
+We used mygene.py\cite{mygene} to query the GO database, and Numpy\cite{numpy} to calculate JIM.
 
 \subsubsection*{GRNs and the evaluation function}
-Following our previous report\cite{okano2023set}, we computed GRNs by calculating
-correlations of continuous gene expression values (e.g., $log_2(RPM+1)$) using pgmpy. In this study, we introduced
+Following our previous report\cite{okano2023set}, we implemented correlation-baed PC algorithm for GRN formation and the evaluation 
+function $d^*$ for similarity of GRN structures using Numpy, Pandas\cite{pandas}, and pgmpy. We also implemented dropout-based binarization, 
+chi-squared test-based PC algorithm and WHQPM accordingly.
+
 
 \subsection*{scRNA-seq data analysis}
 \subsubsection*{Dataset List}
@@ -523,19 +579,14 @@ resources as follows:
     \item Smart-Seq2: \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE133545}
   \end{itemize}
 \end{itemize}
-M1C10X: \url{https://portal.brain-map.org/atlases-and-data/rnaseq/human-m1-10x}\\
-hFB: \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE165388}\\
-aHSPC: \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE137864}\\
-BCA: \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE149938}\\
-\cite{xie2021single}
 
 \subsubsection*{Preprocessing, dimensionality reduction, and visualization}
 We performed data preprocessing, dimensionality reduction, data visualization
-of the scRNA-seq datasets using Python packages (including Scanpy\cite{scanpy}, Polars,
-Pandas\cite{pandas}, Numpy, Matplotlib\cite{matplotlib}, Seaborn\cite{seaborn}) and Julia packages.
+of the scRNA-seq datasets using Python packages (including Scanpy\cite{scanpy}, Polars\cite{polars},
+Pandas, Numpy, Matplotlib\cite{matplotlib}, and Seaborn\cite{seaborn}).
 
-\subsubsection*{Clustering and DE analysis}
-We performed leiden clustering, DE analysis using Scanpy.
+\subsubsection*{Clustering and DEA}
+We performed leiden clustering, DEA using Scanpy.
 
 \subsubsection*{Multiclass classification GBDT model}
 We randomly split the PBMC3k data into training/validation/test data (3:1:1), and with the traiuning and validation 
@@ -549,12 +600,20 @@ with a Python package, Shap\cite{shap,shap_treeexplainer}.
 We performed the GO analysis using gprofiler2\cite{gprofiler2}, and visualized the results with Matplotlib and Seaborn.
 
 \subsubsection*{Statistical models of DOR and the benchmarking}
+For LM, we optimized $b$ of the calibration curve by minimizing the MSE between $DOR$ and $\frac{2}{1+e^{-b\cdot Mean}}+2$ with 
+AdaGrad. We implemented LM and plotting functions with AnnData, Matplotlib, Numpy, Pandas, and PyTorch\cite{pytorch}. 
+We implemented Poisson regression models with Statsmodels\cite{statsmodels}. For NB regression models, we built them on 
+implementation of Statsmodels and optimized hyperparameters using Optuna\cite{optuna}.
+
+\subsubsection*{OT-based coverage standardization}
+We made OT-based domain adaptation models using the EMDTransport class of POT\cite{pot} with the squared euclidean 
+cost. We visualized the results with Matplotlib, Numpy, Pandas, and Seaborn.
 
 \subsection*{Other visualizations}
-\subsubsection*{Alluvial plot of gene symbols and GO terms}
+\subsubsection*{Alluvial plot and Venn diagram about GO terms}
 The glial markers were selected referring review articles, and the tagged GO terms were queried using mygene.py. 
-Then, all gene symbols subscribed with each GO terms were queried again. The visualization was implemented 
-with Matplotlib, Numpy, Pandas.
+Then, all gene symbols subscribed with each GO terms were queried again. The alluvial plot was created with 
+Matplotlib, Numpy, and Pandas, and the Venn diagram was visualized with Matplotlib-Venn\cite{matplotlib-venn}.
 
 \section*{Resource availability}
 \subsection*{Data availability}
@@ -571,16 +630,16 @@ Online documentation for GRNet is also provived (\url{https://grnet.readthedocs.
   \item[Impletemtation] YO
   \item[Investigation] YO
   \item[Visualization] YO
-  \item[Senior author] YK
-  \item[Funding acquisition] YK, HO
+  \item[Funding acquisition] YO, YK, HO
   \item[Project administration] YO, YK, HO
   \item[Supervision] HO
+  \item[Senior author] YK
   \item[Original draft] YO
   \item[Editing] YK, HO
 \end{description}
 
 \section*{Acknowledgements}
-We thank hogehoge for thorough support.
+This work was supported by the Keio University Medical Science Fund (to YO).
 
 
 \section*{Abbreviations}
