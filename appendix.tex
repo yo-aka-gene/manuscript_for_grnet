@@ -25,68 +25,66 @@
 
 \section*{Appendices}
 \subsection*{Supplemental Information}
-\subsubsection*{Cell clusters vs cells classes}
-A cell cluster refers to a stochastic chunk of samples neighbouring each other in the data space or spacific feature 
+\subsubsection*{Cell clusters vs. cells classes}
+A cell cluster refers to a stochastic chunk of samples neighbouring each other in the data space or specific feature 
 space designed via the data analysis. Hence, cell clusters can be defined without introducing GRNs or eigen-cascades. 
-Contrary, a cell class refers a set of samples, which can be treated identical, and their biological features 
-characterized with the eigen-cascades. In this context, what is identical can be defined by a clustring function (i.e., 
-a mapping between samples and the clusters that they belong to) of choice. Therefore, the term cell class 
-emphasizes the randomness of a cell cluster and always tagged with the concept of eigen-cascades. On the other hand, 
-we use cell cluster to refer some data-driven groups of cells in a more neutral nuance.
+In contrast, a cell class refers to a set of samples that can be treated identically, with their biological 
+features characterized by eigen-cascades. In this context, what is identical can be defined by a clustering function 
+(i.e., a mapping between samples and the clusters to which they belong) of choice. Therefore, the term cell class 
+emphasizes the randomness of a cell cluster and is always tagged with the concept of eigen-cascades. On the other 
+hand, we use cell cluster to refer some data-driven groups of cells in a more neutral nuance.
 
 \subsubsection*{
   The vertex set $V_{[x]}(G)$, the edge set $E_{[x]}(G)$, and the eigen-cascades $C_{[x]}(G)$ of a cell class $[x]$
 }
-A graph $(V, E)$ is a pair of the vertex set $V$ and the edge set $E$. To create a graph of a 
-set of genes $G$ based on the statistical dependencies of the genes, the vertex set $V(G)$ and the 
-edgeset $E(G)$ are introduced as follows:
+A graph $(V, E)$ is a pair of a vertex set $V$ and an edge set $E$. To create a graph of a set of genes $G$ based on the 
+statistical dependencies among the genes, the vertex set $V(G)$ and the edgeset $E(G)$ are introduced as follows:
 \begin{equation}\label{V}
   V(G):=G \stepcounter{equation} \tag{S-\theequation}
 \end{equation}
 \begin{equation}\label{E}
-  E(G):=\{(g_1, g_2)\;|\;g_1,g_2\in G\; s.t. \;g_1\neq g_2\;\text{and}\; g_1\;\text{is dependent on}\;g_2\}.
+  E(G):=\{(g_1, g_2)\;|\;g_1,g_2\in G\;\text{s.t.}\;g_1\neq g_2\;\text{and}\; g_1\;\text{is dependent on}\;g_2\}.
   \stepcounter{equation} \tag{S-\theequation}
 \end{equation}
-It is important to note that $(V(G),E(G))$ itself refers to a multigraph and we need to equate $(g_1,g_2)$ 
-and $(g_2,g_1)$ to create GRNs (undirected simple graphs). In the previous article, we introduced 
-asymmetrical notations for edge sets to build up our theory from causal networks and relaxed 
-the restriction by replacing the causalities with the statistical dependencies. In this section, 
-we adopted the same style for consistency even though the statistical dependency of two variables is symmetrical.
+It is important to note that $(V(G),E(G))$ itself refers to a multigraph and we need to equate $(g_1,g_2)$ and $(g_2,g_1)$ to 
+create GRNs (undirected simple graphs). In the previous article, we introduced asymmetrical notations for edge sets 
+to build our theory from causal networks and relaxed the restriction by replacing the causalities with the statistical 
+dependencies. In this section, we adopted the same style for consistency, even though the statistical dependency of 
+two variables is symmetrical.
 
-We also introduced a notation $\{g_1, g_2\}_{g_1}$ where $^\forall g_1,g_2\in G$ such that $g_1$ is dependent on $g_2$, representing an 
+We also introduced a notation $\{g_1, g_2\}_{g_1}$ where $\forall g_1,g_2\in G$ such that $g_1$ is dependent on $g_2$, representing an 
 indexed set with the index $g_1\in\{g_1, g_2\}$ (note that the symmetry of statistical dependency induces symmetry 
-$\{g_1, g_2\}_{g_1}=\{g_1, g_2\}_{g_2}$). We named such index sets cascades. The inclusion of $g_1$ being dependent on itself leads to 
-the expression $\{g_1, g_1\}_{g_1}$; however, mathematical set rules simplify this to $\{g_1\}_{g_1}$. Notably, these singleton sets are 
-also considered valid representations of cascades. The eigen-cascades of a cell class $[x]$ are the cascades that can be 
-inferred from $[x]$, which is the cell class that a sample $x$ belongs. As all cascades are either singletons or sets of two 
-elements, the set of the eigen-cascades $C_{[x]}(G)$ of $[x]$ equals to the union of $V_{[x]}(G)$ and $E_{[x]}(G)$ defined as follows:
+$\{g_1, g_2\}_{g_1}=\{g_1, g_2\}_{g_2}$). We named such indexed sets cascades. The inclusion of $g_1$ being dependent on itself leads 
+to the expression $\{g_1, g_1\}_{g_1}$; however, mathematical set rules simplify this to $\{g_1\}_{g_1}$. Notably, these singleton sets 
+are also considered valid representations of cascades. The eigen-cascades of a cell class $[x]$ are the cascades that can 
+be inferred from $[x]$, which is the cell class that a sample $x$ belongs. As all cascades are either singletons or sets of 
+two elements, the set of eigen-cascades $C_{[x]}(G)$ of $[x]$ equals to the union of $V_{[x]}(G)$ and $E_{[x]}(G)$, defined as follows:
 \begin{equation}\label{Vx}
-  V_{[x]}(G):=\{c|c\in C_{[x]}(G)\; s.t.\; |c|=1\}=\{\{g\}_g|g\in G\}
+  V_{[x]}(G):=\{c\;|\;c\in C_{[x]}(G)\;\text{s.t.}\; |c|=1\}=\{\{g\}_g\;|\;g\in G\}
   \stepcounter{equation} \tag{S-\theequation}
 \end{equation}
 \begin{equation}\label{Ex}
-  E_{[x]}(G):=\{c|c\in C_{[x]}(G)\; s.t.\; |c|=2\}=C_{[x]}(G)\setminus V_{[x]}(G).
+  E_{[x]}(G):=\{c\;|\;c\in C_{[x]}(G)\;\text{s.t.}\; |c|=2\}=C_{[x]}(G)\setminus V_{[x]}(G).
   \stepcounter{equation} \tag{S-\theequation}
 \end{equation}
 
-Juxtaposing the given definitions from Eq. \eqref{V} to Eq. \eqref{Ex}, $V_{[x]}(G)$ and $V_x(G)$ 
-as well as $E_{[x]}(G)$ and $E_x(G)$ have similar formulations. More precisely, $V_{[x]}(G)$ is isomorphic to $G$ and 
-$E_{[x]}(G)$ can be isomorhic to some edge set (e.g., a map $\varphi:\{g_1,g_2\}_{g_1}\mapsto(g_1,g_2)$ 
-is an isomorphism and $\varphi(E_{[x]}(G))$ is a valid edge set). Accordingly, a graph $(G, \varphi(E_{[x]}(G)))$ can be formed 
-referring the eigen-cascades, and the pair of $C_{[x]}(G)$ and $(G, \varphi(E_{[x]}(G)))$ show one-to-one correspondence.
-Concisely, $V_{[x]}(G)$ and $E_{[x]}(G)$ can be regarded as the vertex set and the edge set.
+Juxtaposing the given definitions from Eq. \eqref{V} to Eq. \eqref{Ex}, $V_{[x]}(G)$ and $V_x(G)$ as well as $E_{[x]}(G)$ and $E_x(G)$ 
+have similar formulations. More precisely, $V_{[x]}(G)$ is isomorphic to $G$ and $E_{[x]}(G)$ can be isomorphic to some edge 
+set (e.g., a map $\varphi:\{g_1,g_2\}_{g_1}\mapsto(g_1,g_2)$ is an isomorphism and $\varphi(E_{[x]}(G))$ is a valid edge set). Accordingly, a 
+graph $(G, \varphi(E_{[x]}(G)))$ can be formed referring to the eigen-cascades, and the pair of $C_{[x]}(G)$ and $(G, \varphi(E_{[x]}(G)))$ 
+show one-to-one correspondence. Concisely, $V_{[x]}(G)$ and $E_{[x]}(G)$ can be regarded as the vertex set and the edge set.
 
-It is important to note that the mathematical discussions to extend the notion of cascades to eigen-cascades of 
-cell classes include various notations, operations, and hypotheses that can sound confusing or untrivial. 
-In this article, we simply introduced the notations of $[x]$ and $C_{[x]}(G)$ aiming to shortcut the redundant part. 
-We recommend to refer to the original article for readers interested in the detailed explanations.
+It is important to note that the mathematical discussions to extend the notion of cascades to eigen-cascades 
+of cell classes include various notations, operations, and hypotheses that can sound confusing or non-trivial. In 
+this article, we simply introduced the notations of $[x]$ and $C_{[x]}(G)$ aiming to shortcut the redundant part. We 
+recommend referring to the original article for readers interested in the detailed explanations.
 
 \subsubsection*{
   The logistic model of DOR
 }
 Although the mean expression values and the DOR values show a non-linear relationship, we tried to find a simple 
 non-linear conversion that enables the mean expression values to linearly fit to the DOR values. We leveraged the 
-logistic transformation (i.e., inverse logit transformation) so that the transformed values becomes positive and less 
+logistic transformation (i.e., inverse logit transformation) so that the transformed values become positive and less 
 than 1. Introducing $u$ to be the variable for the transformed values as follows, we tried to fit the parameter $b$ ($b>0$) 
 so that $DOR\sim -2u + 2$ by minimizing the MSE:
 \begin{equation}\label{logistic transformation}
@@ -125,38 +123,38 @@ Therefore, the inverse predictions of those models can be formulated as follows 
   \stepcounter{equation} \tag{S-\theequation}
 \end{equation}
 
-It is noteworthy that the $Mean$ value diverges into infinity as $DOR$ approaches to zero regardless of the choice 
-of the models. Therefore, performance comparison of the inverse prediction models was performed while excluding the data 
-with zero $DOR$ values to avoid metrics such as MAE diverge into infinity (in which case the result indicates 
-that all models perform exactly as poorly as the others by generating infinity prediction errors on average).
+It is noteworthy that the $Mean$ value diverges into infinity as $DOR$ approaches zero, regardless of the model 
+choice. Therefore, the performance comparison of the inverse prediction models was conducted while excluding 
+data with zero $DOR$ values to prevent metrics such as MAE from diverging into infinity. This ensures that the 
+results do not indicate that all models perform equally poorly by generating infinite prediction errors on average.
 
 \subsubsection*{Benchmarking DOR regression models with Mereu2020 datasets}
 For benchmarking DOR regression models (namely LM, Poisson regression model, and NB regression model), we 
-used Mereu2020 dataset families so that we can evaluate the performance of those models when the data were 
-acquired in various sequencing protocols. Likewise we did on PBMC3k dataset, we made LMs, Poisson regression 
+used Mereu2020 dataset families so that we could evaluate the performance of those models when the data were 
+acquired in various sequencing protocols. As we did with PBMC3k dataset, we created LMs, Poisson regression 
 models, and NB regression models for respective datasets (\figurename{ S7A-O}). Then we measured MSE (\figurename{ S8B}), 
 MAE (\figurename{ S8C}), MAE of the inverse-prediction models (\figurename{ S8D}), and MaxAE of the inverse-prediction 
 models (\figurename{ S8E}) to evaluate their performance.
 
-Unlike the result from PBMC3k dataset, LM underperformed Possion and NB regression models in most cases 
-(except for Chromium V2 (sn), Chromium V3, C1HT-medium, and C1HT-small) in terms of MSE (\figurename{ S8B}). 
-Similar results were reproduced in terms of MAE even though all models scored quite small MAE values (\figurename{ S8C}).
-Although LM slightly underperformed the two conventional regression models in explaining the relationship 
+Unlike the result from the PBMC3k dataset, LM underperformed Poission and NB regression models in most 
+cases (except for Chromium V2 (sn), Chromium V3, C1HT-medium, and C1HT-small) in terms of MSE (\figurename{ S8B}). 
+Similar results were reproduced in terms of MAE even though all models scored quite small MAE values 
+(\figurename{ S8C}). Although LM slightly underperformed the two conventional regression models in explaining the relationship 
 between mean expressions and DOR values in general cases, LM showed stable performance in the inverse-prediction 
 tasks scoring less than 0.1 MAE in all cases (\figurename{ S8D}), and even outperformed Poisson and NB regression models 
-in terms of MaxAE (\figurename{ S8E}) suggesting that LM performed better than the other two models at low DOR 
-values. Those results indicated that LM models work as calibration curves that can transform DOR and mean 
+in terms of MaxAE (\figurename{ S8E}), suggesting that LM performed better than the other two models at low DOR 
+values. These results indicated that LM models work as calibration curves that can transform DOR and mean 
 expression values interchangeably in wide ranges of those input values, while the conventional regression models 
-have more weights on domains where samples densely distribute (regularly high-DOR and low-mean-expression 
+have more weight on domains where samples densely distribute (regularly high-DOR and low-mean-expression 
 areas) to outperform LM in terms of MSE, MAE, and MAE of the inverse prediction in general.
 
 \subsubsection*{
   The preimage and general scRNA-seq data transformation
 }
-Let $^\forall A,B,C$ be sets such that $C\subset B$, and let $f:A\rightarrow B$ be a map. 
-The preimage of $C$ under $f$ (denoted as $f^{-1}[C]$) is defined as follows:
+Let $\forall A,B,C$ be sets such that $C\subset B$, and let $f:A\rightarrow B$ be a map. The preimage of $C$ under $f$ (denoted as 
+$f^{-1}[C]$) is defined as follows:
 \begin{equation}\label{preimage}
-  f^{-1}[C]:=\{a\;|\;a\in A\;s.t.\;f(a)\in C\}.
+  f^{-1}[C]:=\{a\;|\;a\in A\;\text{s.t.}\;f(a)\in C\}.
   \stepcounter{equation} \tag{S-\theequation}
 \end{equation}
 Therefore, a function $\psi: \mathbb{N}\rightarrow\mathbb{R}$ such that $\psi^{-1}[\{0\}]=\{0\}$ returns zero 
@@ -173,16 +171,17 @@ Accordingly, the conversion from raw counts to $\log_k(RPM+1)$ values are $\psi_
 \subsubsection*{
   An example where WHQPM is undefined
 }
-Taking look at the definition of $Whqpm$, it is clear that the formula holds iff $|E_{[x]}(G)|+\sum_{g\in G}Coverage_{[x]}(g)\neq 0$. 
-Given that both $|E_{[x]}(G)|$ and $\sum_{g\in G}Coverage_{[x]}(g)$ are non-negative, $Whqpm$ decomes undifined when those two 
-terms are both zero. Such condition is readily satisfied when the GRN of the subjective cell class $[x]$ is characterized 
-with genes completely absent in $[x]$ exhibiting zero coverages (i.e., DOR values of those genes are all 1). In such 
-case, not only $\sum_{g\in G}Coverage_{[x]}(g)=0$ but also $|E_{[x]}(G)|$ becomes 0 (otherwise $^\forall e\in|E_{[x]}(G)$ is undefined). The status 
-of $|E_{[x]}(G)|$ varies depending on the choice of GRN formation algorithm, in other words, computational methods to 
-assign edges among vertexes. While the correlation-based method and the chi-squared test-based method coupled 
-with the dropout-based binarization are not applicable for the case where the mean expression values are all zero 
-and all samples in $[x]$ are negative for all genes. Alternatively, Fisher's exact test is an available option for the 
-algorithm to compute the edges, but the null hypotheses fail to be rejected in those setting resulting in $|E_{[x]}(G)|=0$.
+Looking at the definition of $Whqpm$, it is clear that the formula holds iff $|E_{[x]}(G)|+\sum_{g\in G}Coverage_{[x]}(g)\neq 0$. 
+Given that both $|E_{[x]}(G)|$ and $\sum_{g\in G}Coverage_{[x]}(g)$ are non-negative, $Whqpm$ becomes undefined when these 
+two terms are both zero. Such a condition is readily satisfied when the GRN of the subjective cell class $[x]$ is 
+characterized by genes completely absent in $[x]$, exhibiting zero coverages (i.e., DOR values of those genes are all 
+1). In such a case, not only is $\sum_{g\in G}Coverage_{[x]}(g)=0$, but also $|E_{[x]}(G)|$ becomes 0 (otherwise $\forall e\in|E_{[x]}(G)$ is 
+undefined). The status of $|E_{[x]}(G)|$ varies depending on the choice of the GRN formation algorithm, in other words, 
+computational methods to assign edges among vertexes. While the correlation-based method and the chi-squared 
+test-based method coupled with the dropout-based binarization are not applicable for the case where the mean 
+expression values are all zero and all samples in $[x]$ are negative for all genes, Fisher's exact test is an available 
+option for the algorithm to compute the edges. However, the null hypotheses fail to be rejected in those setting 
+resulting in $|E_{[x]}(G)|=0$.
 
 Consequently, $Whqpm$ is undefined when the GRN of $[x]$ is formed with genes such that $\sum_{g\in G}Coverage_{[x]}(g)=0$. 
 By design, WHQPM prevents ill-defined characterization of the similarity between two cell classes by staying 
@@ -191,45 +190,44 @@ undefined when the subjective cell class is represented exclusively with unchara
 \subsubsection*{
   OT-based domain adaptation for coverage standardization
 }
-To demonstrate the OT-based coverage standardization across different sequencing platforms, here we consider a case to 
-standardize the distributions of coverage values using C1HT-medium dataset and inDrop dataset from Mereu2020. 
-Let the distribution of inDrop be the source domain, which is to be standardized, and that of C1HT-medium be 
-the target domain, which is referred as the goal of the standardization procedure. As we visualized the inferred 
-distributions using kernel density estimation (\figurename{ S6B and S9A}), inDrop is abundant in genes with zero counts 
-for all samples and here we aim to correct it referring C1HT-medium.
+To demonstrate the OT-based coverage standardization across different sequencing platforms, we consider standardizing 
+the distributions of coverage values using C1HT-medium dataset and the inDrop dataset from Mereu2020. 
+Let the distribution of inDrop be the source domain, which is to be standardized, and that of C1HT-medium be the 
+target domain, referred to as the goal of the standardization procedure. As visualized by the inferred distributions 
+upon kernel density estimation (\figurename{ S6B and S9A}), inDrop is abundant in genes with zero counts for all samples, 
+and here we aim to correct it using C1HT-medium as a reference.
 
-After randomly undersampled 10000 genes commonly measured in the both datasets (in order to reduce the computational 
-cost), we performed OT on empirical distributions using earch mover's distance with squared euclidean 
-cost (\figurename{ S9B}). As the line indicating the coupling of the source data and the transformed data were 
-orderly aligned, the OT model mapped the coverage valeus in inDrop dataset into the data distribution of C1HT-medium 
-while perserving the relative order of the original values.
+After randomly undersampling 10,000 genes commonly measured in the both datasets (to reduce computational 
+costs), we performed OT on empirical distributions using earth mover's distance with squared Euclidean cost (\figurename{ S9B}). 
+As the line indicating the coupling of the source data and the transformed data were orderly aligned, the OT 
+model mapped the coverage values in the inDrop dataset to the data distribution of C1HT-medium while preserving 
+the relative order of the original values.
 
 This technique can be extended to adjust for differences in coverage values among clusters in the same dataset. 
 As the definition of coverage depends on the sample sizes of the cell classes, the distributions of coverage values 
-have a variety depending on the cluster sizes; large clusters have relatively smooth and almost continuous distributions, 
+vary depending on the cluster sizes; large clusters have relatively smooth and almost continuous distributions, 
 while small clusters have discrete and stepwise distributions (\figurename{ S9C-D}). Furthermore, clusters might exhibit 
-drastic differences in coverage distribution due to geometrical reasons originating from stochasticity of dropout 
-events. When we tried to standardize the distribution of the cluster 5 in PBMC3k referring the distribution of the 
-cluster 8 (\figurename{ S9E}), the same OT model successfully transformed the source distribution into the target 
-one (\figurename{ S9F}). To quantify how much OT models decayed the biological characteristics of the source cluster by 
-transformation, we calculated the correlation coefficients of coverage values per gene among the source, tranformed, 
-and target distributions (\figurename{ S9G}). As the transformed cluster 5 showed high correlation with the original cluster 
-5 while the coefficient between the cluster 8 was 0.45 indicating poor correlation, it was suggeested that the OT 
-model did not alter the biological feature of the cluster 5 to make it similar to the cluster 8. On the other hand, 
-the same of heatmap regarding the OT model transforming coverage values of inDrop into the distribution of 
-C1HT-medium indicated the model could make samples of the same biological profiles more similar to each other (\figurename{ S9H}). 
-Therefore, we could conclude that the OT-based domain adaptation model could tone down the differences 
-in coverage values by suppressing the gaps derived from artifacts while perserving the biological uniqueness of the 
-samples.
+drastic differences in coverage distributions due to geometrical reasons originating from the stochasticity of dropout 
+events. When we tried to standardize the distribution of cluster 5 in PBMC3k to the distribution of cluster 8 (\figurename{ S9E}), 
+the same OT model successfully transformed the source distribution into the target one (\figurename{ S9F}). To quantify 
+how much OT models decayed the biological characteristics of the source cluster by transformation, we calculated 
+the correlation coefficients of coverage values per gene among the source, transformed, and target distributions 
+(\figurename{ S9G}). As the transformed cluster 5 showed a high correlation with the original cluster 5 while the coefficient with 
+cluster 8 was only 0.45, indicating poor correlation, it suggeested that the OT model did not alter the biological 
+features of cluster 5 to resemble those of cluster 8. On the other hand, the same of heatmap regarding the OT 
+model transforming coverage values of inDrop into the distribution of C1HT-medium indicated the model could 
+make samples of the same biological profiles more similar to each other (\figurename{ S9H}). Therefore, we conclude that 
+the OT-based domain adaptation model could tone down the differences in coverage values by suppressing the gaps 
+derived from artifacts while preserving the biological uniqueness of the samples.
 
-Although our model performed well in moving the finer distribution (the cluster 5 in PBMC3k) to the coarser 
-one (the cluster 8), we would not perform the opposite because the coupling practically fails to form a well-defined 
-map, which returns the same values for the same inputs. For example, eleven cells form the cluster 8 and the genes 
-can exhibit twelve patterns of coverage values ($0,\frac{1}{11},\frac{2}{11},\frac{3}{11},\cdots,1$). As the number of genes are shared between 
-the clusters 8 and 5, and the OT model finds the best one-to-one correspondence minimizing the cost, there exists 
-a pair of genes such that show the exact same coverage values in the cluster 8 but get transformed into different 
+Although our model performed well in moving the finer distribution (cluster 5 in PBMC3k) to the coarser one 
+(cluster 8), we would not recommend performing the opposite because the coupling practically fails to form a well-defined 
+map that returns the same values for the same inputs. For example, cluster 8 is formed by eleven cells, and 
+the genes can exhibit twelve patterns of coverage values ($0,\frac{1}{11},\frac{2}{11},\frac{3}{11},\cdots,1$). Since the number of genes is shared 
+between clusters 8 and 5, and the OT model finds the best one-to-one correspondence minimizing the cost, 
+there exists a pair of genes that show the exact same coverage values in cluster 8 but get transformed into different 
 values because a cluster of a larger size can show more variation in coverage values than twelve. To avoid ill-defined 
-operation, we recommend to apply our method to adjust coverage values referring the smaller cell class. 
+operations, we recommend applying our method to adjust coverage values by referring to the smaller cell class. 
 
 \newpage
 \subsection*{Supplemental Figures}
@@ -250,7 +248,7 @@ operation, we recommend to apply our method to adjust coverage values referring 
   \legend{
     \textbf{A}: The OvR ROC curves of the clusters 0$\sim$8 and their macro average.
     \textbf{B}: The OvR PR curves of the clusters 0$\sim$8 and their micro average.
-    \textbf{C}: A pariwise comparison of the ground-true labels and the predictions.
+    \textbf{C}: A pairwise comparison of the ground-true labels and the predictions.
     \textbf{D}: A UMAP visualization of the prediction accuracy.
   }
   \label{fig_s2}
@@ -260,7 +258,7 @@ operation, we recommend to apply our method to adjust coverage values referring 
   \includegraphics[scale=0.7]{./figs/exported/figure_s3.png}
   \caption{The top 10 features of the clusters in PBMC3k}
   \legend{
-    \textbf{A-I}: The top 10 features (based on SHAP values) for cluster 0$\sim$8 respectively
+    \textbf{A-I}: The top 10 features (based on SHAP values) for cluster 0$\sim$8 respectively.
   }
   \label{fig_s3}
 \end{figure}
@@ -269,9 +267,9 @@ operation, we recommend to apply our method to adjust coverage values referring 
   \includegraphics[scale=0.75]{./figs/exported/figure_s4.png}
   \caption{The top 5 DEGs and the GRNs of the clusters in PBMC3k}
   \legend{
-    \textbf{A}: Violin plot of DEGs of the clusters (top 5 for each)
+    \textbf{A}: Violin plot of DEGs of the clusters (top 5 for each).
     \textbf{B}: GRNs of the clusters. GRNs in a row share the same set of genes
-    (DEGs of the subjective clusters) selected for the vertex sets
+    (DEGs of the subjective clusters) selected for the vertex sets.
   }
   \label{fig_s4}
 \end{figure}
@@ -280,7 +278,7 @@ operation, we recommend to apply our method to adjust coverage values referring 
   \includegraphics[scale=0.7]{./figs/exported/figure_s5.png}
   \caption{The top 30 upregulated GO terms of the clusters in PBMC3k}
   \legend{
-    \textbf{A-I}: The top 30 GO terms for cluster 0$\sim$8 respectively
+    \textbf{A-I}: The top 30 GO terms for cluster 0$\sim$8 respectively.
   }
   \label{fig_s5}
 \end{figure}
@@ -290,7 +288,7 @@ operation, we recommend to apply our method to adjust coverage values referring 
   \caption{Mereu2020 datasets}
   \legend{
     \textbf{A}: A scatter plot regarding the sample sizes and the total reads of the superfamilies in Mereu2020.
-    \textbf{B}: Coverages in the superfamilies in Mereu2020. The dots of the strip plots refer the coverage values of genes in each dataset.
+    \textbf{B}: Coverages in the superfamilies in Mereu2020. The dots of the strip plots refer to the coverage values of genes in each dataset.
     \textbf{C}: Numbers of UMIs (nUMIs) in Mereu2020. As SmartSeq2 is not UMI-based, data were not available.
     \textbf{D}: Total reads per sample in Mereu2020 datasets.
   }
@@ -308,7 +306,7 @@ operation, we recommend to apply our method to adjust coverage values referring 
 \begin{figure}[htb]
   \centering
   \includegraphics[scale=0.7]{./figs/exported/mereu2020_metrics.png}
-  \caption{Performance metrices for regression models of DOR in Mereu2020 datasets}
+  \caption{Performance metrics for regression models of DOR in Mereu2020 datasets}
   \legend{
     \textbf{A}: The coefficients of determination ($R^2$) of logistic-transformed mean expression values to the linear calibration curve of DOR.
     \textbf{B}: Performance comparison of LM, Poisson, and NB with MSE values.
@@ -329,11 +327,11 @@ operation, we recommend to apply our method to adjust coverage values referring 
     The lines indicate the pairing computed with OT.
     \textbf{C}: Coverage per cluster in PBMC3k. 
     \textbf{D}: Sample size per cluster in PBMC3k.
-    \textbf{E}: Kernel density estimation of the coverage values in the clusters 5 and 8 of PBMC3k.
+    \textbf{E}: Kernel density estimation of the coverage values in clusters 5 and 8 of PBMC3k.
     \textbf{F}: Results of OT-based domain adaptation converting 
-    the source distribution (the cluster 5) to the target distribution (the cluster 8).
-    \textbf{G}: Correlation coefficients of the coverage values in the source distribution (the cluster 5), 
-    the transformed distribution (the cluster 5 mapped by the OT model), and the target distribution (the cluster 8).
+    the source distribution (cluster 5) to the target distribution (cluster 8).
+    \textbf{G}: Correlation coefficients of the coverage values in the source distribution (cluster 5), 
+    the transformed distribution (cluster 5 mapped by the OT model), and the target distribution (cluster 8).
     \textbf{H}: Correlation coefficients of the coverage values in the source distribution (inDrop), 
     the transformed distribution (inDrop mapped by the OT model), and the target distribution (C1HT-medium).
   }

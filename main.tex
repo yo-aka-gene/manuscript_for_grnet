@@ -19,17 +19,17 @@
 \affil[1]{
   Department of Extended Intelligence for Medicine, 
   The Ishii-Ishibashi Laboratory, 
-  Keio University School of Medicine;
+  Keio University School of Medicine,
   35 Shinanomachi, Shinjuku-Ku, Tokyo 160-8582, Japan
 }
 \affil[2]{
   Division of CNS Regeneration and Drug Discovery,
   International Center for Brain Science, 
-  Fujita Health University; 
+  Fujita Health University, 
   1-98 Dengakugakubo, Kutsukake-Cho, Toyoake, Aichi 470-1192, Japan
 }
 \affil[3]{
-  Keio University Regenerative Medicine Research Center;
+  Keio University Regenerative Medicine Research Center, 
   3-25-10 Tonomachi, Kawasaki-Ku, Kawasaki, Kanagawa 210-0821, Japan
 }
 \date{\today}
@@ -44,7 +44,7 @@
 \DeclareAcronym{HVG}{short = HVG, long  = highly variable gene}
 \DeclareAcronym{PCA}{short = PCA, long  = principal component analysis}
 \DeclareAcronym{TSVD}{short = TSVD, long  = truncated singular value decomposition}
-\DeclareAcronym{UMAP}{short = UMAP, long  = Uniform Manifold Approximation and Projection}
+\DeclareAcronym{UMAP}{short = UMAP, long  = uniform manifold approximation and projection}
 \DeclareAcronym{ML}{short = ML, long  = machine learning}
 \DeclareAcronym{GBDT}{short = GBDT, long  = gradient boosting decision tree}
 \DeclareAcronym{GO}{short = GO, long  = gene ontology}
@@ -55,7 +55,7 @@
 \DeclareAcronym{ROC}{short = ROC, long  = receiver operating characteristic}
 \DeclareAcronym{AP}{short = AP, long  = average precision}
 \DeclareAcronym{PR}{short = PR, long  = precision-recall}
-\DeclareAcronym{SHAP}{short = SHAP, long  = shapley additive explanations}
+\DeclareAcronym{SHAP}{short = SHAP, long  = Shapley additive explanations}
 \DeclareAcronym{DOR}{short = DOR, long  = dropout rate}
 \DeclareAcronym{LM}{short = LM, long  = logistic model}
 \DeclareAcronym{NB}{short = NB, long  = negative binomial}
@@ -77,82 +77,80 @@
 \maketitle
 
 \section*{Abstract}
-The rise of \ac{scRNA-seq} and computational algorithms have pushed forward today's 
-biomedical science by visualizing multifaceted and diverse nature of cells in single-cell levels. In contrast, due to 
-those technical advancements, cell clusters have played a pivotal role as instantiations of certain universal entities 
-such as cell types and cell states, even though these clusters can be dataset-specific and method-dependent. In 
-order to give them a structure comparable across different datasets or different compositions, in our previous paper, 
-we introduced a graph-based representation of collections of cells that reflects statistical dependencies of their 
-characteristic genes.
+The rise of \ac{scRNA-seq} and evolved computational algorithms have significantly advanced 
+biomedical science by revealing and visualizing the multifaceted and diverse nature of single cells. These 
+technical advancements have also highlighted the pivotal role of cell clusters as representations of biologically universal 
+entities such as cell types and cell states. However, to some extent, these clusterings remain dataset-specific and 
+method-dependent. To improve comparability across different datasets or compositions, we previously introduced 
+a graph-based representation of cell collections that captures the statistical dependencies of their characteristic 
+genes.
 
-Despite we paid attention to theoretical insights in the previous work, refinement on practical implemtntation 
-was left insufficient. Hence, in this article, we proposed a new practice to define and evaluate cellular identities 
-with graph based on our theory. First we provided a concise summary for our theory and workflow we previously 
-introduced. Then, we developped solutions that can point-by-point access issues after raising them to explain why they 
-needed to be fixed. Leveraing alternative formats of cellular features such as \ac{GO} terms and 
-dropouts, we upgraded our framework by improving utility. We also provided supplemental techniques to emphasize 
-our standpoint or reinforce the versatility of our method.
+While our earlier work focused on theoretical insights, it was not sufficiently adapted and fine-tuned for practical 
+implementation. To address this, the present paper introduces an improved practice to define and evaluate cellular 
+identities based on our theory. First, we provide a concise summary of our previous theory and workflow. Then, 
+point-by-point, we highlight the issues that needed fixing and propose solutions. The framework's utility was 
+enhanced by leveraging alternative formats of cellular features such as \ac{GO} terms and effectively 
+handling dropouts. Supplemental techniques are offered to reinforce the versatility and robustness of our method.
 
 \section*{Introduction}
-It has been more than 10 years since the birth of \ac{scRNA-seq}\cite{tang2009mrna}, and the technology now 
-is recognized as a prominent game changer of the molecular biology of this decade. Likewise the pioneering technologies, DNA 
-micro array and bulk RNA-seq, scRNA-seq can observe multidimensional gene expression profiles, while it also can 
-provide such information in single-cell-level. Although this informative assay have contributed to reveal detailed 
-biology of various cell types, the excessive resolution blurred the conceptual boundary between static cell types and 
-transient cell status\cite{regev2017human}. Consequently, clusters, chunks of samples that shares similar geometrical properties in the 
-data space overwrote the classical notion of cell types. As the cell clusters are dependent on sampling stochasticity 
-of the dataset, and their biological properties might sway from the original doctrine of cell types\cite{okano2023set}. Hence, a theoretical 
-backbone and a effective method to glue the theory and real data are essential to identify universal characters of specific 
-samples from piles of extrinsic noises.
+It has been more than 10 years since the birth of \ac{scRNA-seq} \cite{tang2009mrna}, and the technology is now recognized as a 
+prominent game-changer in molecular biology. Like the pioneering technologies in this field---DNA micro array 
+and bulk RNA-seq---scRNA-seq can observe multidimensional gene expression profiles. Additionally, it can provide 
+such information at the single-cell-level. The abundance of information it provides has contributed to revealing the 
+detailed biology of various cell types, but the excessive resolution has blurred the conceptual boundary between static 
+cell types and transient cell statuses \cite{regev2017human}. Consequently, ``clusters''---chunks of samples sharing similar geometrical 
+properties in the data space---have overwritten the classical notion of cell types. The formation of cell clusters 
+depends on the sampling stochasticity of the dataset, and their biological properties might deviate from the original 
+doctrine of cell types \cite{okano2023set}. Therefore, a theoretical backbone and an effective method to link theory and experimental 
+data are essential to distinguish universal characteristics of specific samples from piles of extrinsic noise.
 
-In our previous research, we proposed a \ac{GRN}-based representation of cell clusters 
-while edges of GRNs explain statistical dependencies between two genes, and demonstrated that similarity of two 
-clusters can be defined as a quasi-pseudo-metric function $d^*$\cite{okano2023set}. To discuss mathematical properties of the space of 
-cell clusters, we defined novel terms, cell class and eigen-cascades, and step-by-step introduced their algebraic 
-structures. Eigen-cascades refer to a set of marker genes and pairs of genes that are statistically dependent (i.e., 
-isomorphic to the direct sum of the direct sums of the vertex set and the edge set of a GRN). A cell class refers to 
-a cell cluster characterized with the corresponding eigen-cascades. Note that the nuances of cell clusters and cell 
-classes are slightly different even though we might use those terms interchangeably in this article (See Appendices 
-for more descriptions). When two cell classes $^\forall[x], [y]$ are represented by the GRNs regarding a set of genes $G$, and 
-the two GRNs (eigen-cascades) respectively denoted as $C_{[x]}(G)$ and $C_{[y]}(G)$, a bivariate function $d^*$ that maps a 
-pair of cell classes to real numbers are defined as follows\cite{okano2023set}:
+In our previous research, we proposed a \ac{GRN}-based representation of cell clusters, in 
+which the edges of GRNs explain statistical dependencies between two genes. This demonstrated that the similarity 
+of two clusters can be defined as a quasi-pseudo-metric function $d^*$ \cite{okano2023set}. To discuss the mathematical properties of 
+the quasi-pseudo-metric space of cell clusters, we defined the novel terms ``eigen-cascades'' and ``cell class,'' and 
+introduced their algebraic structures. Eigen-cascades refer to a set of marker genes and pairs of genes that are 
+statistically interdependent (i.e., isomorphic to the direct sum of the vertex set and the edge set of a GRN). A 
+cell class refers to a cell cluster characterized by the corresponding eigen-cascades. Note that the nuances of cell 
+cluster and cell class definitions are slightly different, even though we might use those terms interchangeably in this article 
+(See Appendices for more explanation). When two cell classes $\forall[x], [y]$ are represented by the GRNs regarding a 
+set of genes $G$, and the two GRNs (eigen-cascades) are denoted as $C_{[x]}(G)$ and $C_{[y]}(G)$, a bivariate function $d^*$ 
+that maps a pair of cell classes to real numbers is defined as follows \cite{okano2023set}:
 \begin{equation}\label{d_asterisk}
   d^*([x], [y]) := 1 - \frac{|C_{[x]}(G)\cap C_{[y]}(G)|}{|C_{[x]}(G)|}.
 \end{equation}
-Eq. \eqref{d_asterisk} is derived from the Hamming distance function (a metric function that measures the difference of two 
-character strings) and modified to embrace the tendency of the \ac{PC} algorithm, one of the most 
-simple bayesian network algorithms\cite{okano2023set,bookstein2002generalized, spirtes2000causation}. With those concepts, we also proposed frameworks to compare the 
-similarities of given two cell clusters. Our scheme comprises two fundamental steps: formation of GRNs and 
-evaluation of their similarity (\figurename{ 1A}). As the concept of cell classes are independent from the choice of data 
-analysis methods, this framowork itself can be applied into various cases regardless of any feature engineering (such 
-as the data preprocessing) and clustering methods.
+Eq. \eqref{d_asterisk} is derived from the Hamming distance function (a metric function that measures the difference between 
+two character strings) and modified to embrace the tendency of the \ac{PC} algorithm, one of the 
+simplest Bayesian network algorithms \cite{okano2023set,bookstein2002generalized, spirtes2000causation}. With these concepts, we also proposed frameworks to compare 
+the similarities of two given cell clusters. Our scheme comprises two fundamental steps: (i) formation of GRNs and (ii) 
+evaluation of their similarity (\figurename{ 1A}). As the definition of cell classes is independent of the choice of data 
+analysis methods, this framework can be applied into various cases regardless of any feature engineering (such as 
+the data preprocessing) or clustering methods.
 
 The framework can be applied into the annotation of scRNA-seq data when a referential dataset is available 
-(\figurename{ 1B}). As the annotation is the act of tagging clusters with descriptions in natural languages, the biological 
-features of annotated clusters often treated as general and preserved properties of the cell types which the clusters 
-are named after. Accordingly, it is better to have a large enough referential dataset which seem to reflect canonical 
-states of specific cell types which are shared with the query dataset. Using GRN-based characterization, cell classes 
-are annotated with the name of the most similar cell class, however, comparisons of cellular identities can be 
-bidirectional due to asymmetry of $d^*$. We named the similarity of cell classes from the perspectives of the query 
-data as estimation, and the one from the point of view of the referential data as labeling. Those GRN-based 
-annotations can be visualized with planet plots, where the subjective cell class (here we denote it $[x]$) is located in 
-the center and the radii of the circles reflect $d^*([x],\cdot)$ values for all cell classes placed on the circumferences.
+(\figurename{ 1B}). Because annotation is an act of tagging clusters with descriptions in natural languages, the biological 
+features of annotated clusters are often treated as common and preserved properties of the cell types after which 
+the clusters are named. Accordingly, it is better to have a large enough referential dataset reflecting canonical 
+states of specific cell types shared with the query dataset. Using GRN-based characterization, cell classes are annotated 
+with the name of the most similar cell class; however, comparisons of cellular identities can be bidirectional due to the 
+asymmetry of $d^*$. We refer to the similarity of cell classes from the perspectives of the query data as ``estimation,'' 
+and the one from the point of view of the referential data as ``labeling.'' These GRN-based annotations can be 
+visualized with planet plots, in which the subjective cell class (denote here as $[x]$) is located in the center and the 
+radii of the circles reflect $d^*([x],\cdot)$ values for all cell classes placed on the circumferences.
 
-The performance of those frameworks build around GRNs have its bottleneck in the step to create GRNs, and 
-the process can be broken down into the configuration of the vertex sets and the choice of the network algorithm 
-(\figurename{ 1C}). As well as the methods of the feature engineering and the clustering, each step of the GRN formation 
-also has a variety of options. In the last paper, we introduced a combined method of manual curation referring 
-review articles and a \ac{ML}-based feature selection using a \ac{GBDT} 
-model with the L1 and the L2 regularizations\cite{okano2023set}. For the manual supervision, \ac{GO} terms can be 
-another information source. Nevertheless, a priori identification of the sample components are essential to create 
-meaningful GRNs by injecting the domain-specific information. The \ac{DEG}-based 
-method can be a more heuristic and a less interactive option because the \ac{DEA} 
-semi-automatically scoops DEGs. Regarding the network algorithms, we mentioned that there are several possible 
-options as well. In our previous paper, we implemented our codes using the numerical (i.e., correlation-based) PC 
-algorithms provided in Pgmpy\cite{pgmpy}, a python package for probablistic graphical models. Another variation of the PC 
-algorithm based on the chi-square test suitable for categorical data is also a realistic option if when the expression 
-values can be binarized in some ways. We also mentioned that the \ac{MMHC} algorithm, which 
-combines constraint-based and scoring-based methods\cite{tsamardinos2006max}, is one of promissing alternatives of the PC algorithm.
+The performance of those frameworks built around GRNs has a bottleneck in the GRN creation step, which 
+involves configuring the vertex sets and choosing of the network algorithm (\figurename{ 1C}). Similar to feature engineering 
+and clustering methods, each step of GRN formation offers various options. In our last paper, we introduced a 
+combined method of manual curation using review articles and a \ac{ML}-based feature selection 
+with a \ac{GBDT} model incorporating L1 and the L2 regularizations \cite{okano2023set}. For manual 
+supervision, \ac{GO} terms can serve as an additional information source. However, prior identification of sample 
+components is essential to create meaningful GRNs by integrating domain-specific information. The \ac{DEG}-based 
+method can be a more heuristic and a less interactive option since the \ac{DEA} 
+semi-automatically selects DEGs. Regarding the network algorithms, there are several 
+possible options. In our previous paper, we implemented our codes using the numerical (i.e., correlation-based) PC 
+algorithms provided in Pgmpy \cite{pgmpy}, a Python package for probabilistic graphical models. Another variation of 
+the PC algorithm based on the chi-square test, suitable for categorical data, is also a realistic option when the 
+expression values can be binarized. We also mentioned that the \ac{MMHC} algorithm, which 
+combines constraint-based and scoring-based methods \cite{tsamardinos2006max}, is one of the promissing alternatives to the PC algorithm.
 
 \begin{figure}[htb]
   \centering
@@ -160,11 +158,11 @@ combines constraint-based and scoring-based methods\cite{tsamardinos2006max}, is
   \caption{The framework of the GRN-based characterization and annotation of cell classes}
   \legend{
     \textbf{A}: The foundation of the GRN-based characterization of cell classes. 
-    After clustering in designed data space by arbitrary methods, cell classes (the clusters) can be represented by 
-    GRNs of corresponding genes of choice. The similarity of two GRNs of the same vertex 
-    (marker gene) are evaluated with the assymetrical function $d^*$, where the return values 
-    reflects the similarity from the viewpoint of the subjective clusters. \textbf{B}: 
-    Schematic of the GRN-based scRNA-seq data annotation. Expecting the referential data to reflect canonical 
+    After clustering in the designated data space by arbitrary methods, cell classes (the clusters) can be represented by 
+    GRNs of corresponding genes of choice. The similarity of two GRNs with the same vertex 
+    (marker gene) is evaluated with the asymmetrical function $d^*$, where the return values 
+    reflect the similarity from the viewpoint of the subjective clusters. 
+    \textbf{B}: Schematic of the GRN-based scRNA-seq data annotation. Expecting the referential data to reflect canonical 
     states of target sample domains, the evaluation of the similarity among cell classes can be performed bidirectionally.
     \textbf{C}: Methodological variations of the selection of vertex sets (marker genes) and the algorithms to compute 
     the network structures of GRNs.
@@ -172,89 +170,89 @@ combines constraint-based and scoring-based methods\cite{tsamardinos2006max}, is
   \label{framework}
 \end{figure}
 
-So far, we have highlighted the versatility of our framework by providing examples that showcase its applicability 
-across various data analysis methods. Our intention was to allow researchers to reflect their expertise in specific 
-sample domains or preferences to the process of describing the samples with words of biology. This customization 
+So far, we have highlighted the versatility of our framework by providing examples that demonstrate its applicability 
+across various data analysis methods. Our intention was to allow researchers to integrate their expertise 
+in specific sample domains, or preferences, by textually describing the samples in biological terms. This customization 
 ensures that the metrics for cellular identities are crafted to align with the specific research scopes, providing both 
 necessary and sufficient resolutions. However, this design choice has the drawback of making our algorithm less 
-user-friendly, as it requires a significant amount of effort in annotation, even when it might not be the primary 
-focus of their projects. To validate the legitimacy of our theory in as many cases as possible, it is essential to refine 
-the practices related to GRN-based annotation, streamlining the overall workflow.
+user-friendly, as it requires a significant amount of effort in annotation, even when annotation might not be a 
+primary focus of their projects. To validate our theory across a wide range of cases, it is essential to refine the 
+practices related to GRN-based annotation and streamline the overall workflow.
 
-In this article, enumerating the three major topics where the former protocol has rooms for refinement, we 
-provided more prectical solutions for each while leveraging the backbone theory of GRN-based comparisons of cluster-wise
+In this article, we address three major issues where the former protocol left room for improvement and provide 
+more practical solutions for each while leveraging the backbone theory of GRN-based comparisons of cluster-wise
 cellular identities (i.e., cell classes).
 
 \section*{Results}
-\subsection*{Challenges of the framework of GRN-based methods}
-Here in this section, we will point out the following three challenges regarding practical uses of the GRN-based 
-annotation to solidify our goals for this article.
+\subsection*{Challenges for the framework of GRN-based methods}
+To clarify our objective for this article, this section describes the three major challenges for the practical use of 
+GRN-based annotation:
 
 \subsubsection*{1. Difficulty of effective gene selection}
-In our previous study, we proposed a method of choosing marker genes by combining supervised curation referring a review paper and a ML-based 
-feature selection leveraging the feature importance in L1-regularized GBDT model. 
-Although we have mentioned that there are various possibile options for the marker gene selection, each strategy has its unique drawback.
+In our previous study, we proposed a method for selecting marker genes that combines supervised curation, based 
+on a review paper, with ML-based feature selection, leveraging the feature importance in an L1-regularized GBDT 
+model. While we mentioned that various options exist for marker gene selection, each strategy has its unique 
+drawback.
 
-Supervison by the experimenter struggles with completeness and arbitrariness even though we cite some reliable 
-sources (e.g., review papers, or GO terms). For example, in the last paper, we selected SLC1A2, VIM, and AQP4 
-as glial markers referring a review article\cite{zhang2015molecular}. Those glial markers are subcribed to various GO terms in total, and there 
-are other genes than the three tagged with those terms (\figurename{ 2A}). This example highlights the incompleteness of 
-the three genes to represent all aspects of glia. Furthermore, the many-to-many correspondence of genes and GO 
-terms would make it a significant challenge to draw a clear and reasonable line between the genes adopted as 
-marker genes and the others.
+Supervision by the experimenter struggles with completeness and arbitrariness, even when citing reliable sources 
+(e.g., review papers or GO terms). For example, in our previous paper, we selected \textit{SLC1A2}, \textit{VIM}, and \textit{AQP4} as 
+glial markers based on a review article \cite{zhang2015molecular}. These glial markers are associated with various GO terms, but other 
+genes are also tagged with these terms (\figurename{ 2A}). This highlights the incompleteness of these three genes in 
+representing all aspects of glia. Furthermore, the many-to-many correspondence between genes and GO terms 
+makes it challenging to draw a clear line between adopted marker genes and others.
 
-ML-based approach is another method we implemented in our last report, and has its unique problems. As we 
-shown in \figurename{ S1}, the standard workflow of the scRNA-seq data analysis consists several steps: the \ac{QC} 
-of the data; normalization such as \ac{RPM} transformation and logarithmic transformation; 
-\ac{HVG} extraction; demensionality reduction such as \ac{PCA}, 
-\ac{TSVD}, \ac{UMAP}\cite{umap}, 
-etc.; clustering; \ac{DEA}; annotation; and other downstream analysis\cite{luecken2019current}. Given that creating a good ML model 
-requires plenty of time other than actual run times for fine tuning the model configurations, those trials might take 
-excessive efforts just for gene selection for GRNs even when the annotation is unlikely to be the ultimate goal of 
-the data analysis. Additionally, even with a ML model that performs well, extracting informative features can suffer 
-from arbitrariness about the selection. To demonstrate those difficulties, we analyzed an open source scRNA-seq 
-data of peripheral blood mononuclear cells distributed from 10X Genomics (for short, we called the dataset with 
-an alias, PBMC3k, in this research). Starting from QC, we proceeded to leiden clustering to have 9 clusters (0$\sim$8) 
-as shown in \figurename{ 2B}. Then, we created a GBDT model for multiclass classification (which predicts clusters from 
-the gene expression values). The model seemed to perform well in regards of the \ac{AUC} of 
-the \ac{OvR} \ac{ROC} curve as well as the macro average of 
-them, the \ac{AP} of the \ac{OvR} \ac{PR} curve accompanied with the micro average of 
-them, and the accuracy score (\figurename{ S2A-D}). In the previous article, we made a three-class classification model 
-and utilized the feature importance as a criterion (\figurename{ 2C}). However, the same approach did not work for the 
-nine-class classification model this time because there is no clear boundary between key features and negligible ones 
-even within the top 10 features of importance. Note that GRNs require pairwise calculation of genes, accordingly, 
-modelers should avoid using an excessive number of genes for computational efficiency. Other than the feature 
-importance scores, the \ac{SHAP} scores can be an alternative metric to visualize the correspondence between the features 
-and the classifications\cite{shap}. Even though SHAP scores provided more intuitive and precise explanations (\figurename{ 2D and S3A-I}), 
-it is still a challenge to introduce an objective thresholds for gene selection because the distributions 
-of SHAP scores drastically vary across different classes. Consequently, the ML-based approach is not the most 
-effective way to select marker genes to represent the cell classes because it also requires the modeler's subjectivity as well as reference based supervision 
-despite it is more time-consuming. ML-based approaches might work well if the character of the samples are 
-completely unknown, or the concensus among the experts is yet to be settled. However, even under such conditions, 
-alternative methods such as DEG-based approach should be accounted.
+The ML-based approach is another method we implemented in our last report, and it also has its unique 
+problems. As shown in \figurename{ S1}, the standard workflow of scRNA-seq data analysis involves several steps: data \ac{QC}; 
+normalization, including \ac{RPM} transformation and logarithmic transformation; 
+\ac{HVG} extraction; dimensionality reduction, such as \ac{PCA}, 
+\ac{TSVD}, \ac{UMAP} \cite{umap}, 
+etc.; clustering; \ac{DEA}; annotation; and other downstream analyses \cite{luecken2019current}. Creating an effective ML model requires 
+considerable time beyond actual run times for fine-tuning model configurations, which can be excessively effortful 
+for gene selection for GRNs, especially when annotation is not the primary goal of the data analysis. Moreover, even 
+with a well-performing ML model, extracting informative features can suffer from arbitrariness in the selection. 
+To illustrate these difficulties, we analyzed an open-source scRNA-seq dataset of peripheral blood mononuclear cells 
+(referred to as ``PBMC3k'' for convenience), distributed bt the company 10X Genomics. Starting from QC, 
+we proceeded to leiden clustering, resulting in 9 clusters (0$\sim$8) as shown in \figurename{ 2B}. We then created a GBDT 
+model for multiclass classification, predicting clusters from gene expression values. The model performed well in terms 
+of the \ac{AUC} of the \ac{OvR} \ac{ROC} curves; 
+the macro average of the OvR ROC curves; the \ac{AP} of the \ac{OvR} \ac{PR} curves; 
+the micro average of the OvR PR curves; and the accuracy score (\figurename{ S2A-D}). In our previous article, we created a 
+three-class classification model and used feature importance as a criterion (\figurename{ 2C}). However, this approach did 
+not work for the nine-class classification model due to the lack of clear boundaries between key and negligible features, 
+even when selecting the top 10 features of importance. Since GRNs require pairwise edge calculation, 
+modelers should avoid using an excessive number of genes for computational efficiency. Besides feature importance 
+scores, \ac{SHAP} scores can be an alternative metric to visualize the correspondence between features 
+and classifications \cite{shap}. Despite SHAP scores providing more intuitive and precise explanations 
+(\figurename{ 2D and S3A-I}), it remains challenging to introduce objective thresholds for gene selection due to the drastically 
+varying distributions of SHAP scores across different classes. Consequently, the ML-based approach is not the most 
+effective way to select marker genes for representing cell classes, as it requires subjective and case-by-case decisions on the 
+number of marker genes to adopt, making it more time-consuming. ML-based approaches might work well if the 
+character of the samples is completely unknown or the consensus among experts is yet to be settled. However, even 
+under such conditions, alternative methods such as the DEG-based approach should be considered.
 
-The DEG-based approach is another alternative that can be smoothly added onto the regualr scRNA-seq data 
-analysis pipeline. In spite of its heuristicity and promptness, this method also has a shortcoming. Using the 
-PBMC3k data processed in the exact same way as what we performed in the last section, we will exhibit an 
-example hereby. The advantage of the GRN-based approach is the switfness of the overall procedure by directly 
-applying the top DEGs into the vertex sets. Accordingly, we applied the top 5 DEGs of each cluster (\figurename{ S4A}), 
-created GRNs based on those genes (\figurename{ S4B}), and calculated the $d^*$ values (\figurename{ 2E}). Looking at the bottom 
-row of the heatmap, the $d^*$ values were all zero from the point of view of cluster 8 even though it 
-showed significantly different expression patterns of the top 5 marker genes (\figurename{ 2F}). Additionally, the top 30 
-upregulated GO terms of each cluster indicate that cluster 8 could exclusively be annotated as megakaryocytes, but 
-the remainders exhibited different cellular characters (\figurename{ S5A-I}). Those results indicated that the GRNs did 
-not work properly for identification of the cluster 8 because the zero $d^*$ values for the clusters 0$\sim$7 implied that those 
-clusters and the cluster 8 were indistinguishable in terms of the GRNs with the given vertex sets. Increasing 
-the number of DEGs to 10, a edge added to the GRN for the cluster 8, which alteration made the $d^*$ values non-zero 
-(\figurename{ 2H-I}). As the GO terms suggested that there were no cluster of megakaryocytes other than the cluster 8, 
-the new $d^*$ values indicating that the clusters 0$\sim$7 were equally different from the cluster 8 seemed correct. Likewise 
-we explored the optimal number of the DEGs to use for the vertex sets, the marker-gene selection is an intricate 
-step that requires repetitive adjustments and validations. 
+The DEG-based approach is another alternative that can be smoothly integrated into the regular scRNA-seq 
+data analysis pipeline. Despite its heuristic nature and promptness, this method also has its shortcomings. Using 
+the PBMC3k data processed the same way as in the previous section, we will illustrate this with an example. The 
+GRN-based approach offers the advantage of a swift procedure by directly applying the top DEGs into the vertex 
+sets. Accordingly, we applied the top 5 DEGs of each cluster to the vertex sets (\figurename{ S4A}), created GRNs based 
+on those genes (\figurename{ S4B}), and calculated the $d^*$ values (\figurename{ 2E}). Observing the bottom row of the heatmap, 
+the $d^*$ values were all zero from the perspective of cluster 8 even though it showed significantly different expression 
+patterns of the top 5 marker genes (\figurename{ 2F}). Additionally, the top 30 upregulated GO terms of each cluster 
+indicate that cluster 8 could exclusively be annotated as ``megakaryocytes,'' while the others exhibited different 
+cellular characters (\figurename{ S5A-I}). This indicated that the GRNs did not work properly for identifying cluster 8, 
+as the zero $d^*$ values for the clusters 0$\sim$7 implied that these clusters and cluster 8 were indistinguishable in terms 
+of the GRNs with the given vertex sets. Increasing the number of DEGs to 10 added an edge to the GRN for 
+cluster 8, resulting in non-zero $d^*$ values (\figurename{ 2H-I}). As the GO terms suggested no other clusters of megakaryocytes 
+except cluster 8, the new $d^*$ values appeared to correctly indicate that the clusters 0$\sim$7 were equally different from 
+cluster 8. Thus, the marker-gene selection is an intricate step that requires repetitive adjustments and validations 
+especially when exploring the optimal number of the DEGs to use for the vertex sets.
 
-So far we have point-by-point raised issues associated with respective marker-gene selection methods.
-Considering the fact that our method's primary application is the annotation of scRNA-seq data, which is unlikely to be 
-the ultimate goals of the scRNA-seq data analyses, we need an alternative method to find marker genes to reduce 
-computational costs and streamline the overall time required to initiate main analyses.
+In this paragraph, we have highlighted issues with various marker-gene selection methods and emphasized that 
+selecting necessary and sufficient genes to represent certain cellular identities is time-consuming and sometimes 
+computationally intensive, though it is a key part of GRN-based annotation. Given this, and considering that 
+annotation is often not the ultimate goal of the scRNA-seq data analyses, developing an alternative method for 
+finding marker genes is necessary to reduce computational costs and streamline the time required before initiating 
+the main analyses.
 
 
 \subsubsection*{2. Statistical issue: independence v.s. uncorrelation}
@@ -267,32 +265,32 @@ $X$ and $Y$ is defined as follows:
 \begin{equation}\label{corr}
   Corr(X, Y):=\frac{Cov(X, Y)}{\sqrt{Var[X]Var[Y]}},\quad \text{if}\; Var[X]Var[Y] > 0,
 \end{equation}
-where $E[\cdot]$ is the expected value, $Var[\cdot]$ is the variance, and $Cov(\cdot, \cdot)$ is the covariance. Independent variables 
-exhibit a correlation coefficient of zero, the converse is false (e.g., when $X\sim U(-1, 1)$, where $U(-1, 1)$ refers to the uniform 
-distribution over the interval from -1 to 1, $Corr(X, X^2)=0$ although $X$ and $X^2$ are dependent). Therefore, strictly 
-speaking, it is not appropriate to substitute the chi-square test or the exact test with the t test of correlation. 
-Furthermore, the correlation-based method does not work well when the gene expression matrices regarding the 
-selected genes are highly sparse. As Eq. \eqref{corr} holds if and only if both $Var[X]$ and $Var[Y]$ are non-zero values, under 
-circumstances where all samples in a cluster exhibit zero counts for certain genes required in the vertex set, 
-the correlation-based approach is inappropriate. This situation is by no means an imaginary counterexample 
-unrealistically hypothesized just for criticism. A phenomenon called dropout is a characteristic of scRNA-seq data 
-where gene expressions were not detected due to the inefficiency and the stochasticity of scRNA-seq\cite{qiu2020embracing}, and it 
-results in the high sparsity of scRNA-seq data matices.
+where $E[\cdot]$ is the expected value, $Var[\cdot]$ is the variance, and $Cov(\cdot, \cdot)$ is the covariance. Independent variables exhibit 
+a correlation coefficient of zero, but the converse is false. For example, if $X\sim U(-1, 1)$, where $U(-1, 1)$ refers to 
+the uniform distribution over the interval from -1 to 1, then $Corr(X, X^2)=0$ although $X$ and $X^2$ are dependent. 
+Therefore, strictly speaking, it is not appropriate to substitute the chi-square test or the exact test with the t-test 
+of correlation. Furthermore, the correlation-based method does not work well when the gene expression matrices are 
+highly sparse regarding the selected genes. As Eq. \eqref{corr} holds if, and only if, both $Var[X]$ and $Var[Y]$ are non-zero 
+values, under circumstances where all samples in a cluster exhibit zero counts for certain genes required 
+in the vertex set, the correlation-based approach is inappropriate. This situation is by no means an unrealistic 
+hypothetical counterexample. For example, a phenomenon called ``dropout'' is a characteristic of scRNA-seq data 
+where gene expressions are not detected due to the inefficiency and the stochasticity of scRNA-seq \cite{qiu2020embracing}, resulting 
+in high sparsity of scRNA-seq data matrices.
 
-However, we introduced a correlation-based algorithm to get GRNs compromising rigor in order to adjust to 
-continuous gene expression values. To address this issue, we need to implement an effective method to binarize the 
-gene expression values so that the new algorithm would rely on the statistical tests of independence. This update 
-would make our algorithm align better to the original concept of our theory.
+In our previous work, we introduced a correlation-based algorithm to construct GRNs, compromising rigor to 
+accommodate continuous gene expression values. To address this issue in the current study, we propose 
+an effective method to binarize the gene expression values, allowing the new algorithm to rely on statistical tests of 
+independence. This update will better aligh our algorithm with the original concept of our theory.
 
-\subsubsection*{3. Irresponsibility to gene expression values}
-The GRNs were designed to represent cellular functions by having edges between two statistically dependent genes. 
-The correlation-based GRN generation is also rooted from the same idea and draws edges between two vertexes 
-where they exhibit correlations. Even though those strategies can visualize the co-occurence or the mutual exclusivity of 
-the gene expressions, actual expression values are dismissed. This failure leads to misassignments of cellular identities 
-in practical cases as well as the example of PBMC3k; the GRNs of the cluster 0 and 8 showed exactly 
-identical structures even though the expression patterns of the marker genes that forms the vertex set were significantly 
-different (\figurename{ 2F-G}). This example highlights not only the difficulty of the gene selection but also 
-the irresponsibility of GRNs to the gene expression values.
+\subsubsection*{3. Insufficient responsiveness to gene expression values}
+GRNs have originally been designed to represent cellular functions by establishing edges between two statistically 
+dependent genes. The correlation-based GRN generation follows the same idea, drawing edges between two vertexes 
+where correlations exist. Although these strategies can visualize the co-occurrence or mutual exclusivity of the gene 
+expressions, actual expression values are dismissed. This failure leads to misassignments of cellular identities in 
+practical cases, as demonstrated with the PBMC3k example; namely, the GRNs of clusters 0 and 8 showed identical 
+structures despite significantly different expression patterns of the marker genes forming the vertex set (\figurename{ 2F-G}). 
+This example highlights not only the difficulty of the gene selection but also the insufficient responsiveness 
+of GRNs to gene expression values.
 
 \begin{figure}[htb]
   \centering
@@ -300,42 +298,41 @@ the irresponsibility of GRNs to the gene expression values.
   \caption{Examples of the major issues on the GRN-based frameworks}
   \label{bc}
   \legend{
-    \textbf{A}: Alluvial plot showing the many-to-many correspondence of gene symbols and GO terms.
-    \textbf{B}: UMAP of the PBMC3k dataset. The markers were colored according to the cluster.
-    \textbf{C}: The top 10 genes of the highest feature imporance of the multiclass classification LightGBM model.
-    \textbf{D}: The top 20 genes of the highest mean SHAP values of the multiclass classification LightGBM model.
+    \textbf{A}: Alluvial plot showing the many-to-many correspondence between gene symbols and GO terms.
+    \textbf{B}: UMAP of the PBMC3k dataset. The markers are colored according to the cluster.
+    \textbf{C}: The top 10 genes with the highest feature importance according to the multiclass classification LightGBM model.
+    \textbf{D}: The top 20 genes with the highest mean SHAP values according to the multiclass classification LightGBM model.
     \textbf{E}: The $d^*$ values based on the GRNs of the top 5 DEGs. 
     The rows correspond to the subjective cell classes, and the columns correspond to the objective ones.
-    \textbf{F}: The top 5 DEGs of the cluster 8.
-    \textbf{G}: The GRNs of the clusters 0$\sim$8 based on the top 5 DEGs of the cluster 8.
-    \textbf{H}: The GRNs of the clusters 0$\sim$8 based on the top 10 DEGs of the cluster 8.
-    \textbf{I}: The re-calculated $d^*$ values among the GRNs based on the top 10 DEGs of the cluster 8.
+    \textbf{F}: The top 5 DEGs of cluster 8.
+    \textbf{G}: The GRNs of the clusters 0$\sim$8 based on the top 5 DEGs of cluster 8.
+    \textbf{H}: The GRNs of the clusters 0$\sim$8 based on the top 10 DEGs of cluster 8.
+    \textbf{I}: The re-calculated $d^*$ values among the GRNs based on the top 10 DEGs of cluster 8.
   }
 \end{figure}
 
 
 \subsection*{Semi-automated marker-gene suggestion}
-Although we intended to require experimenters to curate marker genes to use in GRNs, manual supervision struggles 
-with arbitrariness and imperfection of the marker genes. Other semi-automated approaches, namely ML-based and 
-DEG-based methods, often require overly recurrsive trials to find optimal sets of marker genes. To improve the 
-fluidity of the workflow, it is essential to introduce a novel method to collect marker genes efficiently.
+Manual curation of marker genes for GRNs struggles with arbitrariness and incompleteness, while semi-automated 
+ML-based and DEG-based methods often require overly recurrsive trials to find optimal sets of marker genes. To 
+improve workflow efficiency, we developed an algorithm to automatically suggest similar genes to supplement given 
+marker genes. 
 
-To achieve that goal, we implemented an algorithm to automatically suggest similar genes to supplement given 
-marker genes. We leveraged overlapped GO terms of the given marker genes and mapped them back to gene 
-symbols. For instance, the three glial marker genes shares two GO terms in their intersection (\figurename{ 3A}), and the 
-similarities of their GO terms can be set-theoretically defined with Jaccard index values (\figurename{ 3B}). Here we 
-interpreted that: 1) the intersection of the Venn diagram contained the pivotal GO terms that reflected the biological 
-semantics collectively defined by the given marker genes; and 2) the minimal Jaccard index value was the 
-indicator of the similarity about the group of genes (therefore it could work as a threshold of acceptance 
-when other genes are added). To find new genes without altering biological meaning of the list, we querried gene symbols 
-tagged with the pivotal GO terms (\figurename{ 3C}), filtered out genes that exhibited lower Jaccard index values between 
-any gene in the original list (\figurename{ 3D}), and the remainders formed the new gene list (\figurename{ 3E}).
+We leveraged overlapping GO terms of the given marker genes and mapped them back to gene symbols. For 
+instance, the three glial marker genes in our example share two GO terms in their intersection (\figurename{ 3A}), and the 
+similarities of their GO terms can be set-theoretically defined with Jaccard index values (\figurename{ 3B}). We interpreted 
+that: 1) the intersection of the Venn diagram contained the pivotal GO terms that reflected the biological semantics 
+collectively defined by the given marker genes; and 2) the minimal Jaccard index value was the indicator of the 
+similarity about the group of genes (therefore it could work as a threshold of acceptance when other genes are 
+added). To find new genes without altering the biological meaning of the list, we querried gene symbols tagged 
+with the pivotal GO terms (\figurename{ 3C}), filtered out genes that exhibited lower Jaccard index values compared to 
+any gene in the original list (\figurename{ 3D}), and used the remainders to form the new gene list (\figurename{ 3E}).
 
-Likewise we implemented the combined method of the manual and ML-based marker gene selection on the 
-GRN-based annotation using a referential dataset (the labeling, which evaluates the $d^*$ values from the referential 
-clusters to the query clusters), such methods that require manual assignment of marker genes are suitable for characterizing 
-clusters of known cellualr identities (i.e., pre-annotated clusters in referential datasets). Accordingly, 
-our new proposal can be applied to similar cases.
+We also implemented a combined method of manual and ML-based marker gene selection on the GRN-based 
+annotation using a referential dataset. This labeling evaluates the $d^*$ values from the referential clusters to the query 
+clusters. Such methods that require manual assignment of marker genes are suitable for characterizing clusters of 
+known cellular identities (i.e., pre-annotated clusters in referential datasets). Accordingly, our new proposal can be 
+applied to similar cases.
 
 
 \begin{figure}[htb]
@@ -345,59 +342,59 @@ our new proposal can be applied to similar cases.
   \label{jibased}
   \legend{
     \textbf{A}: Venn diagram of the GO terms related to the three glial marker genes. 
-    Here we considered the intersection of the whole three set as a set of the pivotal GO terms defined by the three marker genes.
+    Here, we considered the intersection of the three sets as the pivotal GO terms defined by the three marker genes.
     \textbf{B}: Jaccard index values of the GO terms related to the three glial marker genes.
-    The minimal value were adopted as the threshold for the automated gene selection.
+    The minimal value was adopted as the threshold for automated gene selection.
     \textbf{C}: Jaccard index values of the GO terms related to the three glial marker genes and 
     other gene symbols subscribed to the pivotal GO terms.
-    \textbf{D}: Jaccard index values smaller than the threshold were shown in red and the others were shown in gray.
+    \textbf{D}: Jaccard index values smaller than the threshold are shown in red, and the others are shown in gray.
     \textbf{E}: Jaccard index values of the GO terms related to the gene symbols included in the output gene list.
   }
 \end{figure}
 
 
 \subsection*{Dropout-based binarization}
-As we discussed above, the dropout can be considered as an example for the pitfalls of the corrlation-based algorithm.
-On the otherhand, the dropouts are recently studied well to be turned out that the zero inflation are closely related 
-to data attributes such as cell types\cite{qiu2020embracing, zappia2017splatter}. Inheriting from these ideas, we considered that the dropouts can be 
-a good indicator of enriched gene expressions. In details, the binarization algorithm of our proposal determines 
-non-zero expression values as positive and zeros as negative. For example, the top two DEGs of the cluster 8 in 
-PBMC3k, PF4 and GNG11 (both are megakaryocyte markers\cite{puhm2023diversity}), were raraly expressed in the cluster 5 (\figurename{ 2F}), 
-accordingly, the $2\times 2$ contingency table based on the identification algorithm showed that the majority of the 
-cluster 5 were classified double-negative (\figurename{ 4A}).
+As discussed, the risk of dropout highlights the pitfalls of the correlation-based algorithms. However, recent studies 
+show that the zero inflation is closely related to data attributes like cell types \cite{qiu2020embracing, zappia2017splatter}. Building on this, we consider 
+dropouts as potential indicators of enriched gene expressions. Our binarization algorithm marks non-zero expression 
+values as positive and zeros as negative. For instance, the top two DEGs of cluster 8 in PBMC3k, \textit{PF4} and \textit{GNG11} 
+(both megakaryocyte markers \cite{puhm2023diversity}), were rarely expressed in cluster 5 (\figurename{ 2F}). Consequently, the 
+$2\times 2$ contingency table identified the majority of cluster 5 as double-negative (\figurename{ 4A}).
 
-Although we adopt the standpoint of dropout as a practical feature, some experts have opposed the idea of exploiting dropouts and have 
-developped dropout imputation algorithms\cite{kim2020demystifying}. To clarify our point, here we examine how dropouts explain the data features.
+While we consider dropout a practically useful feature, some experts oppose this and have developed dropout 
+imputation algorithms \cite{kim2020demystifying}. To clarify our point, we here examine how dropouts explain the data features.
 
-First, we validated if the \ac{DOR}, the proportion of zeros in the count data of a gene, associated 
-with the mean values ($log_2(RPM+1)$) in the PBMC3k data. Although the DOR values and the mean values 
+First, we validated whether the \ac{DOR}---the proportion of zeros in the count data of a gene---was 
+associated with the mean values ($log_2(RPM+1)$) in the PBMC3k data. Although the DOR values and the mean values 
 exhibited a non-linear correspondence, we could successfully establish a linear formulation with a simple logistic 
 transformation on the mean expression values (See Appendices for details). The logistic-transformed mean values 
-fitted well to the linear calibration curve scoring 0.993 in the coefficient of determination ($R^2$), and we named the 
-inverse-transformed curve aligned with the data distribution in the scatter plot of the mean values and the DOR 
-(\figurename{ 4B}). Hence, we could demonstrate that the DOR values are closely related to the mean expression values, 
-which are the most frequently-used summary statistics. As the DOR values are comparable across different datasets, 
-while the mean expression values are unsuitable for trans-dataset comparison, it was suggested that the potential 
-of the calibration curve of DOR and the mean expression to work effectively in cell class comparison using multiple 
-data source by interchangeably translating the comparable feature and the uncomparable but meaningful 
-one. To benchmark the performance of the model, we coined the name \ac{LM}, and compared with 
-a Poisson regression model and a \ac{NB} regression model (\figurename{ 4C}), which are well-known models 
-of dropout events\cite{choi2020bayesian}. The \ac{MSE} scores of those models indicated the LM best fitted to PBMC3k dataset compared 
-to the other competitors (\figurename{ 4D}), and its \ac{MAE} (i.e., expected prediction error) in DOR 
-value turned out to be less than 0.005 (\figurename{ 4E}). To measure the errors produced when turning DOR values back 
-to mean expressions, we made the inverse prediction models of those three models (See Appendices for details), and 
-tested their performance. As described in Appendices, the all inverse prediction models have a fundamental issue 
-in predicting mean expression values for zero DOR, we excluded those data from performance evaluation and we visualized \ac{MaxAE} values in addition to MAE values so that we could quantify the 
-prediction performance for data of low DOR. LM exhibited lowest MAE scoring less than 0.1 errors in mean 
-expression values on average (\figurename{ 4F}), and it scored the best in MaxAE as well (\figurename{ 4G}).
+fitted well to the linear calibration curve, achieving a coefficient of determination ($R^2$) of 0.993. Additionally, 
+the inverse-transformed curve aligned well with the data distribution in the scatter plot of the mean values and the 
+DOR (\figurename{ 4B}). Hence, we could demonstrate that the DOR values are closely related to the mean expression values, 
+which are the most frequently used summary statistics. As the DOR values are comparable across different 
+datasets, while the mean expression values are unsuitable for trans-dataset comparison, it was suggested that the potential 
+of the calibration curve of DOR and the mean expression could work effectively in cell class comparison using multiple 
+data sources by interchangeably translating the comparable feature and the non-comparable but 
+meaningful one. To benchmark the performance of the model, we coined the name ``\ac{LM}'', and 
+compared it with a Poisson regression model and a \ac{NB} regression model (\figurename{ 4C}), which 
+are well-known models for explaining dropout events \cite{choi2020bayesian}. The \ac{MSE} scores of those models 
+indicated that the LM best fitted to the PBMC3k dataset compared to the other competitors (\figurename{ 4D}), and 
+its \ac{MAE} (i.e., expected prediction error) in DOR value turned out to be less than 0.005 
+(\figurename{ 4E}). To measure the errors produced when turning DOR values back to mean expressions, we made inverse 
+prediction models of those three models (See Appendices for details) and tested their performance. As described in 
+Appendices, all inverse prediction models have a fundamental issue in predicting mean expression values for zero 
+DOR, so we excluded those data from performance evaluation. We visualized \ac{MaxAE} 
+values in addition to MAE values to quantify the prediction performance for data of low DOR. LM exhibited the 
+lowest MAE, scoring less than 0.1 errors in mean expression values on average (\figurename{ 4F}), and it performed 
+the best in MaxAE as well (\figurename{ 4G}).
 
 \begin{figure}[htb]
   \centering
   \includegraphics[scale=0.8]{./figs/exported/logisticmodel.png}
   \caption{Dropout-based binarization and empirical investigations on DOR}
   \legend{
-    \textbf{A}: A dropout-based $2\times 2$ contingency table of PF4 and GNG11 for the cluster 5 in PBMC3k 
-    ($+$: non-zero expression values, $-$: zeros).
+    \textbf{A}: A dropout-based $2\times 2$ contingency table of \textit{PF4} and \textit{GNG11} for cluster 5 in PBMC3k 
+    ($+$, non-zero expression values; $-$, zeros).
     \textbf{B}: The LM of DOR. 
     \textbf{C}: The performance comparison with the Poisson regression model (Poisson) and 
     the negative-binomial regression model (NB).
@@ -409,41 +406,37 @@ expression values on average (\figurename{ 4F}), and it scored the best in MaxAE
   \label{logistic model}
 \end{figure}
 
-Followingly, we tested if there is correspondence between DOR and some data attributes unique to individual 
-datasets using a group of datasets obtained by Mereu and the colleagues\cite{mereu2020benchmarking} (hereby we called the group of 
-datasets Mereu2020). Mereu2020 includes 15 superfamilies where the same sample components were measured 
-across different protocols (e.g., different platforms or different sequencing depth) in order to benchmark scRNA-seq 
-protocols\cite{mereu2020benchmarking}, including Chromium V2 (deep), Chromium V2 (shallow), Chromium V2 (sn), Chromium V3, C1HT-medium, 
+Following this, we tested if there is correspondence between DOR and some data attributes unique to individual 
+datasets using a group of datasets that we have named ``Mereu2020'' as they were obtained in 2020 by Mereu 
+and colleagues \cite{mereu2020benchmarking}. Mereu2020 includes 15 superfamilies where the same sample components were measured across 
+different protocols (e.g., different platforms or different sequencing depths) in order to benchmark scRNA-seq 
+protocols \cite{mereu2020benchmarking}, including Chromium V2 (deep), Chromium V2 (shallow), Chromium V2 (sn), Chromium V3, C1HT-medium, 
 C1HT-small, CEL-seq2, Drop-seq, ICELL8, MARS-Seq, Quartz-Seq2, gmcSCRB-seq, ddSEQ, inDrop, 
-and Smart-Seq2 (for detailed descriptions, please refer to the original article\cite{mereu2020benchmarking} and URLs to the corresponding 
-webpages on Gene Expression Omnibus we respectively provided in Methods). Datasets included in Mereu2020 
-exhibited wide range of variations in sample sizes and total reads (\figurename{ S6A}). When we visualized coverages 
-of gene expressions (in other words, proportions of non-zero values which is equivalent to $1-DOR$), numbers 
-of \ac{UMI}, and total reads per sample, datasets with high coverages were enriched in 
-UMI and read counts (\figurename{ S6B-D}). Therefore, it was suggested that DOR reflected those metadata attributes, 
-which is also discussed in previous studies\cite{qiu2020embracing, zappia2017splatter}. Futhermore, we tested if we could reproduce LMs explaining the 
-intertwinement between DOR and mean expressions well in Mereu2020 datasets (\figurename{ S7A-O}). As well as we have 
-shown with PBMC3k dataset, logistic-transformed mean expression values of all datasets fitted well to the linear 
-calibration curves with high coefficients of determination (\figurename{ S8A}). We also benchmarked their performance 
-comparing with Poisson and NB regression models (\figurename{ S7A-O, S8B-E}). As there provided detailed descriptions 
-in Appendices, LM showed its ability to work as a calibration curve of DOR and mean expression values in a wide 
-range of datasets. Consequently, it was suggested that DOR reflects metadata features and per-gene characteristics.
-
-Given those examples we have so far demonstrated, we concluded that DOR can be a useful statistic that reflects 
-collective features of scRNA-seq data including mean expression values and other metadata including information 
-about sequencing depth.
+and Smart-Seq2; for detailed descriptions, please refer to the original article \cite{mereu2020benchmarking} and URLs of the corresponding 
+webpages on Gene Expression Omnibus that we provide in Methods. Datasets included in Mereu2020 exhibit a 
+wide range of variations in sample sizes and total reads (\figurename{ S6A}). When we visualized the coverages of gene 
+expressions (in other words, proportions of non-zero values which are equivalent to $1-DOR$), numbers of \ac{UMI}, 
+and total reads per sample, the datasets with high coverages were found enriched in UMI and read counts (\figurename{ S6B-D}). Thus, DOR appears to reflected those metadata attributes, as was discussed in previous studies \cite{qiu2020embracing, zappia2017splatter}. Furthermore, we tested whether we could accurately reproduce LMs explaining the intertwinement 
+between DOR and mean expressions when using Mereu2020 datasets (\figurename{ S7A-O}). As we showed with the 
+PBMC3k dataset, logistic-transformed mean expression values of all Mereu2020 datasets fitted well to the linear 
+calibration curves, with high coefficients of determination (\figurename{ S8A}). We also benchmarked LMs by 
+comparing them with Poisson and NB regression models using those datasets (\figurename{ S7A-O, S8B-E}). As detailed 
+in Appendices, the LM demonstrated its capability to function as a calibration curve for DOR and mean expression values 
+across a wide range of datasets. Thus, our analysis indicates that DOR reflects metadata features and per-gene characteristics. 
+Based on the provided examples, we concluded that DOR can be a useful statistic reflecting 
+collective features of scRNA-seq data, including mean expression values and metadata such as sequencing depth 
+information.
 
 \subsection*{Weighted evaluation function}
-As we stated above, the GRN formation dismisses actual mean expression values of a cell cluster by encoding only 
-the co-occurence (or co-absence) of gene expressions. To fix this issue, we introduced a new metric which can play a 
-role as an evaluation function of GRNs in lieu of $d^*$, so that we can assign weights to the abundance of 
-gene expressions on the similarity of graph structures. To quantify the amount of gene expressions in a manner 
-comparable across different datasets, we applied the coverage (the presense of the non-zero gene expressions which 
-is equivalent to $1-DOR$) expecting DOR to indirectly reflect the mean expressions of the marker genes forming 
-the edges of the GRNs. With a map $q: \Gamma\times X\rightarrow \mathbb{N}$ which returns a raw gene counts of gene $^\forall g\in\Gamma$ for sample 
-$^\forall x\in X$ where $\Gamma$ is the whole set of genes and $X$ is the whole set of samples, we formulated the coverage function 
-$Coverage_{[x]}: \Gamma\rightarrow\mathbb{Q}$ of cell class $[x]$ (which indicates the coverage value of the given gene $g$ in the designated cell 
-class $[x]$) as follows:
+As stated above, the GRN formation dismisses actual mean expression values of a cell cluster by encoding only 
+the co-occurrence (or co-absence) of gene expressions. To address this issue, we introduced a new metric that can 
+serve as an evaluation function of GRNs instead of $d^*$. This allows us to assign weights to the similarity of graph 
+structures based on the abundance of gene expressions. To quantify gene expression amounts comparably across 
+different datasets, we used coverage (the presence of non-zero gene expressions, equivalent to $1-DOR$), expecting 
+DOR to indirectly reflect the mean expressions of the marker genes forming the edges of the GRNs. With a map 
+$q: \Gamma\times X\rightarrow \mathbb{N}$ that returns raw gene counts for gene $\forall g\in\Gamma$ for sample $\forall x\in X$ (where $\Gamma$ is the whole set of genes 
+and $X$ is the whole set of samples), we formulated the coverage function $Coverage_{[x]}: \Gamma\rightarrow\mathbb{Q}$ of cell class $[x]$ 
+(indicating the coverage value of the given gene $g$ in the designated cell class $[x]$) as follows:
 \begin{equation}\label{coverage}
   Coverage_{[x]}(g):=\frac{
     |\{x\;|\;x\in[x]\;s.t.\;q(g,x)\neq 0\}|
@@ -451,10 +444,9 @@ class $[x]$) as follows:
     |[x]|
   }.
 \end{equation}
-Note that $Coverage_{[x]}$ relies on $q$ only for identifying zeros in raw counts, therefore, 
-any kind of values converted from raw counts by a transformation $\psi: \mathbb{N}\rightarrow\mathbb{R}$ 
-such that $\psi^{-1}[\{0\}]=\{0\}$ can be used instead of $q(g, x)$. For instance, \ac{RPM} values 
-and $\log_2(RPM+1)$ are accepted (see Appendices for more detailed explanations).
+Note that $Coverage_{[x]}$ relies on $q$ only for identifying zeros in raw counts; therefore, any kind of values converted 
+from raw counts by a transformation $\psi: \mathbb{N}\rightarrow\mathbb{R}$ such that $\psi^{-1}[\{0\}]=\{0\}$ can be used instead of $q(g, x)$. For 
+instance, \ac{RPM} values and $\log_2(RPM+1)$ are accepted (see Appendices for more detailed explanations).
 
 Given that Eq.\eqref{d_asterisk} can also be denoted as Eq.\eqref{HQPM}, we introduced our new evaluation function, the \ac{WHQPM} 
 $Whqpm$, by multiplying the cardinality of the gene set $|G|$ respectively 
@@ -475,31 +467,30 @@ with the coverage values resulting in Eq.\eqref{WHQPM}:
     |E_{[x]}(G)|+\sum_{g\in G}Coverage_{[x]}(g)
   }.
 \end{equation}
-Note that \ac{WHQPM} cannot be defined if $Coverage_{[x]}(g)=0$ for all $^\forall g\in G$, and this property of WHQPM prohibits 
-a cell class get its similarity to other cell classes characterized with totally irrelevant genes exhibiting zero expressions 
-(See also Appendices for detailed explanations).
+Note that \ac{WHQPM} cannot be defined if $Coverage_{[x]}(g)=0$ for all $\forall g\in G$, and this property of WHQPM prohibits 
+a cell class from being assigned similarity to other cell classes based on totally irrelevant genes exhibiting zero 
+expressions (See also Appendices for detailed explanations).
 
-As WHQPM depends on coverage values, not only biological variations but technical factors including choices 
-of sequencing pipelines as well affect the result. If one considers that differences in DOR are also realistic features 
+As WHQPM depends on coverage values, not only biological variations but also technical factors including 
+choices of sequencing pipelines affect the result. If one considers that differences in DOR are also realistic features 
 of the data, WHQPM is available for comparing cell classes across different datasets. Otherwise, \ac{OT}-based 
-domain adaptation can mitigate the gap if the experimenter prefer to standardize the various effects 
-that have impact on DOR, as we described in \figurename{ S9A-H} and Appendices.
+domain adaptation can mitigate the gap if the experimenter prefers to standardize the various effects 
+that impact on DOR, as described in \figurename{ S9A-H} and Appendices.
 
-To demonstrate the benefit from the use of WHQPM, first we computed GRNs of the clusters 0 through 8 on 
-their top 5 DEGs using the dropout-based binarization technique and the PC algorithm for categorical data (\figurename{ 5A}), 
+To demonstrate the benefit of using WHQPM, we first computed GRNs of the clusters 0 through 8 on their top 5 DEGs using the dropout-based binarization technique and the PC algorithm for categorical data (\figurename{ 5A}), 
 and then calculated $Whqpm$ values to visualize the similarities of the clusters (\figurename{ 5B}). Although the PC algorithm for categorical data inferred the exact same GRNs for different clusters in some cases (e.g., the GRNs of 
-the top 5 DEGs of the cluster 8, namely PPBP, SPARC, SDPR, PF4, and GNG11), $Whqpm$ distinguished the 
-differnces between the cluster 8 and the other clusters as it returned non-zero values except for the cluster 8 itself. 
-As $d^*$ returns zero if the subjective cell class has no edges in its GRN, we could resolve this issue with WHQPM.
+the top 5 DEGs of cluster 8, namely \textit{PF4}, \textit{GNG11}, \textit{PPBP}, \textit{SPARC}, and \textit{SDPR}), $Whqpm$ distinguished the differences 
+between cluster 8 and the other clusters as it returned non-zero values except for cluster 8 itself. As $d^*$ returns zero 
+if the subjective cell class has no edges in its GRN, we could resolve this issue with WHQPM.
 
 
 \begin{figure}[htb]
   \centering
   \includegraphics[scale=0.8]{./figs/exported/binarization.png}
-  \caption{Combination of dropout-based bunarization and WHQPM}
+  \caption{Combination of dropout-based binarization and WHQPM}
   \legend{
-    \textbf{A}: GRNs of the clusters in PBMC3k generated with dropout-based binarization and PC algorithm for categorical data. GRNs in a row share the same set of genes
-    (DEGs of the subjective clusters) selected for the vertex sets.
+    \textbf{A}: GRNs of the clusters in PBMC3k generated with dropout-based binarization and the PC algorithm for categorical data. 
+    GRNs in a row share the same set of genes (DEGs of the subjective clusters) selected for the vertex sets.
     \textbf{B}: The $Whqpm$ values based on the GRNs of the top 5 DEGs generated after dropout-based binarization.
   }
   \label{binarization}
@@ -507,56 +498,56 @@ As $d^*$ returns zero if the subjective cell class has no edges in its GRN, we c
 
 
 \section*{Discussion}
-In general, scRNA-seq data processing is driven by statistical, geometrical, and information-theoretical approach 
-even though the results from those algorithms are perceived by testing if they can recite the storyline of biology. In 
-other words, detailed aspects of algorithms are less significant if the results make sense in some way. Therefore, 
-heurisiticity is valued rather than theoretical rigor in some context. As scRNA-seq data are acceleratedly 
-accumulated even though they are sensitive to fluctuation of the surrounding conditions, we belive that a framework that 
-can handle scRNA-seq data in a tentative but comparable format would help us land on universal truth yet to be 
-unveiled by balancing context-dependency and generalization.
+In general, scRNA-seq data processing is driven by statistical, geometrical, and information-theoretical approaches, 
+even though the results from these algorithms are validated by their ability to recite the storyline of biology. In 
+other words, the specific details of algorithms are not necessarily interesting as long as the results make biological sense. Therefore, 
+heuristics is often valued over theoretical rigor. As scRNA-seq data accumulate at an accelerating rate, 
+and despite their sensitivity to fluctuations in surrounding conditions, we believe that a framework that can handle 
+scRNA-seq data in a tentative but comparable format will help balance context-dependency and generalization, 
+uncovering universal truth yet to be unveiled.
 
-We designed the GRN-based definition of cellular identities and the metric $d^*$ to quantify the similarity of them 
-in order to meet the need, however, impracticality that we have so far pointed out had remained. Therefore, we 
-proposed a series of solutions hoping for improved functionality. We also launched a python package GRNet 
-(pronounced garnet) to provide a platform for our proposal concepts, which needs further validations in various cases.
+We previously designed the GRN-based definition of cellular identities and the metric $d^*$ to quantify their 
+similarity levels. However, our method included several impracticalities, as described earlier in this article. Therefore, 
+we proposed a series of solutions aimed at improving functionality. Additionally, we launched a Python package, 
+GRNet (pronounced garnet), to provide a platform for our proposed concepts. While promising results have been 
+observed in a limited number of datasets, broader validation and discussion is still required.
 
 \section*{Methods}
-\subsection*{GRNet Impletemtations}
+\subsection*{GRNet Implementations}
 
-\subsubsection*{GO term-assisted gene selection referring Jaccard Index}
+\subsubsection*{GO term-assisted gene selection using Jaccard Index}
+The Jaccard Index of two sets $A, B$ is defined as:
 \begin{equation}\label{jaccard}
-  J(A, B) := \frac{A\cap B}{A\cup B}
+  J(A, B) := \frac{A\cap B}{A\cup B}.
 \end{equation}
-Jaccard Index of two sets $A, B$ is defined as Eq. \eqref{jaccard}. We expanded this 
-definition to pairwise comparisons of multiple elements by forming a matrix 
-where each element is the corresponding Jaccard Index, and we named the matrix \ac{JIM}. For example, the element in 
-$i$-th row and $j$-th column (where $i, j, k\in\mathbb{N}$ and $i\leq k, j\leq k$), $JIM_{i,j}$, can be defined as
-follows when a JIM of sets $X_1, X_2,\cdots, X_k$ are introduced:
+We expanded this definition to pairwise comparisons of multiple elements by forming a matrix where each element is 
+the corresponding Jaccard Index. We named this matrix the \ac{JIM}. As an example, the 
+element in the $i$-th row and $j$-th column (where $i, j, k\in\mathbb{N}$ and $i\leq k, j\leq k$) is defined as follows when a JIM of 
+sets $X_1, X_2,\cdots, X_k$ is introduced:
 \begin{equation}\label{jim}
   JIM_{i, j} := J(X_i, X_j).
 \end{equation}
 
-When a collection of genes $g_1, \cdots, g_k$ collectively explain certain type of cells, and they are tagged with respective 
-sets GO terms $G_1, \cdots, G_k$, we considered $min_{i,j\in\{1\cdots k\}}J(G_i, G_j)$ as a threshold of biological correspondence to the 
-type of cells. For example, let $G_{k+1}, G_{k+2}$ are the sets of GO terms tagged with $g_{k+1}$ and $g_{k+2}$ 
-($g_{k+1}, g_{k+2}\notin \{g_1, \cdots, g_k\}$), new gene $g_{k+1}$ would be important for the type of cells if $min_{i\in\{1\cdots k\}}J(G_i, G_{k+1})$ 
+When a collection of genes $g_1, \cdots, g_k$ collectively explain a certain type of cells, and they are tagged with respective 
+sets of GO terms $G_1, \cdots, G_k$, we considered $min_{i,j\in\{1\cdots k\}}J(G_i, G_j)$ as a threshold of biological correspondence 
+to the type of cells. For example, let $G_{k+1}, G_{k+2}$ be the sets of GO terms tagged with $g_{k+1}$ and $g_{k+2}$ 
+($g_{k+1}, g_{k+2}\notin \{g_1, \cdots, g_k\}$); then a new gene $g_{k+1}$ would be important for the type of cells if $min_{i\in\{1\cdots k\}}J(G_i, G_{k+1})$ 
 is less than $min_{i,j\in\{1\cdots k\}}J(G_i, G_j)$, and $g_{k+2}$ would be irresponsible if $min_{i\in\{1\cdots k\}}J(G_i, G_{k+2})$ is greater than 
-$min_{i,j\in\{1\cdots k\}}J(G_i, G_j)$. Under those rules, we implemented to search for important markers from genes tagged 
-with GO terms in $\bigcap_{i\in\{1,\cdots,k\}}G_i$.
+$min_{i,j\in\{1\cdots k\}}J(G_i, G_j)$. Under those rules, we implemented a search for important markers from genes tagged with 
+GO terms in $\bigcap_{i\in\{1,\cdots,k\}}G_i$.
 
-For detailed method of implementation, we calculated the JIM of the related GO terms of given seed markers. 
-We used mygene.py\cite{mygene} to query the GO database, and Numpy\cite{numpy} to calculate JIM.
+For detailed implementation, we calculated the JIM of the related GO terms of given seed markers. We used 
+mygene.py \cite{mygene} to query the GO database, and Numpy \cite{numpy} to calculate JIM.
 
 \subsubsection*{GRNs and the evaluation function}
-Following our previous report\cite{okano2023set}, we implemented correlation-baed PC algorithm for GRN formation and the evaluation 
-function $d^*$ for similarity of GRN structures using Numpy, Pandas\cite{pandas}, and pgmpy. We also implemented dropout-based binarization, 
-chi-squared test-based PC algorithm and WHQPM accordingly.
+Following our previous report \cite{okano2023set}, we implemented a correlation-baed PC algorithm for GRN formation and the evaluation 
+function $d^*$ for similarity of GRN structures using Numpy, Pandas \cite{pandas}, and pgmpy. Additionally, we 
+implemented dropout-based binarization, a chi-squared test-based PC algorithm, and WHQPM accordingly.
 
 
 \subsection*{scRNA-seq data analysis}
 \subsubsection*{Dataset List}
-The scRNA-seq data we used in this research were publicly available as online
-resources as follows:
+The scRNA-seq data we used in this research were publicly available from the following online resources:
 
 \begin{itemize}
   \item PBMC3k: \url{https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/pbmc3k}
@@ -581,53 +572,49 @@ resources as follows:
 \end{itemize}
 
 \subsubsection*{Preprocessing, dimensionality reduction, and visualization}
-We performed data preprocessing, dimensionality reduction, data visualization
-of the scRNA-seq datasets using Python packages (including Scanpy\cite{scanpy}, Polars\cite{polars},
-Pandas, Numpy, Matplotlib\cite{matplotlib}, and Seaborn\cite{seaborn}).
+We performed data preprocessing, dimensionality reduction, and data visualization of the scRNA-seq datasets 
+using Python packages (including Scanpy \cite{scanpy}, Polars \cite{polars}, Pandas, Numpy, Matplotlib \cite{matplotlib}, and Seaborn \cite{seaborn}).
 
 \subsubsection*{Clustering and DEA}
-We performed leiden clustering, DEA using Scanpy.
+We performed leiden clustering, and \ac{DEA} using Scanpy.
 
 \subsubsection*{Multiclass classification GBDT model}
-We randomly split the PBMC3k data into training/validation/test data (3:1:1), and with the traiuning and validation 
-data, a GBDT model minimizing the multiclass-logarithtic loss function was created using LightGBM's 
-framework. We implemented the model with a wrapper in Optuna to automatically tune the hyperparameters. The 
-models performance were tested with the ROC curves and the PR curves using Scikit-learn and Matplotlib. We 
-also visualized the feature importance values implemented in LightGBM. The SHAP scores were calculated and visualized 
-with a Python package, Shap\cite{shap,shap_treeexplainer}.
+We randomly split the PBMC3k data into training, validation, and test data (3:1:1). Using the training and 
+validation data, we created a GBDT model minimizing the multiclass-logarithmic loss function using LightGBM's 
+framework \cite{lightgbm}. We implemented the model with a wrapper in Optuna \cite{optuna} to automatically tune the hyperparameters. 
+The models performance was tested with ROC curves and PR curves using Scikit-learn \cite{scikit-learn} and Matplotlib. 
+We also visualized the feature importance values implemented in LightGBM. SHAP scores were calculated and 
+visualized with the Shap Python package \cite{shap,shap_treeexplainer}.
 
 \subsubsection*{GO analysis}
-We performed the GO analysis using gprofiler2\cite{gprofiler2}, and visualized the results with Matplotlib and Seaborn.
+We performed the GO analysis using gprofiler2 \cite{gprofiler2}, and visualized the results with Matplotlib and Seaborn.
 
 \subsubsection*{Statistical models of DOR and the benchmarking}
 For LM, we optimized $b$ of the calibration curve by minimizing the MSE between $DOR$ and $\frac{2}{1+e^{-b\cdot Mean}}+2$ with 
-AdaGrad. We implemented LM and plotting functions with AnnData, Matplotlib, Numpy, Pandas, and PyTorch\cite{pytorch}. 
-We implemented Poisson regression models with Statsmodels\cite{statsmodels}. For NB regression models, we built them on 
-implementation of Statsmodels and optimized hyperparameters using Optuna\cite{optuna}.
+AdaGrad. We implemented LM and plotting functions with AnnData, Matplotlib, Numpy, Pandas, and PyTorch \cite{pytorch}. 
+We implemented Poisson regression models with Statsmodels \cite{statsmodels}. For NB regression models, we built them 
+on Statsmodels and optimized hyperparameters using Optuna.
 
 \subsubsection*{OT-based coverage standardization}
-We made OT-based domain adaptation models using the EMDTransport class of POT\cite{pot} with the squared euclidean 
-cost. We visualized the results with Matplotlib, Numpy, Pandas, and Seaborn.
+We made OT-based domain adaptation models using the EMDTransport class of POT \cite{pot} with the squared 
+Euclidean cost. The results were visualized with Matplotlib, Numpy, Pandas, and Seaborn.
 
 \subsection*{Other visualizations}
-\subsubsection*{Alluvial plot and Venn diagram about GO terms}
-The glial markers were selected referring review articles, and the tagged GO terms were queried using mygene.py. 
+\subsubsection*{Alluvial plot and Venn diagram for GO terms}
+The glial markers were selected based on review articles, and the tagged GO terms were queried using mygene.py. 
 Then, all gene symbols subscribed with each GO terms were queried again. The alluvial plot was created with 
-Matplotlib, Numpy, and Pandas, and the Venn diagram was visualized with Matplotlib-Venn\cite{matplotlib-venn}.
+Matplotlib, Numpy, and Pandas, and the Venn diagram was visualized with Matplotlib-Venn \cite{matplotlib-venn}.
 
-\section*{Resource availability}
-\subsection*{Data availability}
-Not applicable
-\subsection*{Code availability}
-GRNet and the analysis codes are available on GitHub (\url{https://github.com/yo-aka-gene/grnet}).
-Online documentation for GRNet is also provived (\url{https://grnet.readthedocs.io}).
+\section*{Code availability}
+GRNet and the analysis codes are available on GitHub at \url{https://github.com/yo-aka-gene/grnet}. Online documentation 
+for GRNet is also provided at \url{https://grnet.readthedocs.io}.
 
 
 \section*{Author contributions}
 \begin{description}
   \item[Conceptualization] YO
   \item[Methodology] YO
-  \item[Impletemtation] YO
+  \item[Implementation] YO
   \item[Investigation] YO
   \item[Visualization] YO
   \item[Funding acquisition] YO, YK, HO
@@ -639,7 +626,8 @@ Online documentation for GRNet is also provived (\url{https://grnet.readthedocs.
 \end{description}
 
 \section*{Acknowledgements}
-This work was supported by the Keio University Medical Science Fund (to YO).
+This work was supported by the Keio University Medical Science Fund (to YO). We are grateful to Dr. Hans 
+Dijkstra (Fujita Health University) for critical reading of the manuscript.
 
 
 \section*{Abbreviations}
